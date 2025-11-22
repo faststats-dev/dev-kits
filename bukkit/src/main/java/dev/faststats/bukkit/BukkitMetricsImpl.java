@@ -105,7 +105,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         @Override
         public Metrics create(Plugin plugin) throws IOException, IllegalStateException {
             var dataFolder = plugin.getServer().getPluginsFolder().toPath().resolve("faststats");
-            var config = dataFolder.resolve("config.json");
+            var config = dataFolder.resolve("config.properties");
             return new BukkitMetricsImpl(this, plugin, config);
         }
     }

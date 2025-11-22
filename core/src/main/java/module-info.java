@@ -5,7 +5,6 @@ module dev.faststats.core {
     exports dev.faststats.core.chart;
     exports dev.faststats.core;
 
-    requires com.github.luben.zstd_jni;
     requires com.google.gson;
     requires java.net.http;
 

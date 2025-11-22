@@ -100,7 +100,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         public Metrics create(Object plugin) throws IOException, IllegalStateException, IllegalArgumentException {
             var faststats = dataDirectory.resolveSibling("faststats");
             var container = server.getPluginManager().ensurePluginContainer(plugin);
-            return new VelocityMetricsImpl(this, logger, server, faststats.resolve("config.json"), container);
+            return new VelocityMetricsImpl(this, logger, server, faststats.resolve("config.properties"), container);
         }
     }
 }

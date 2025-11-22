@@ -1,11 +1,6 @@
 package dev.faststats.core;
 
-import com.github.luben.zstd.Zstd;
-import com.google.gson.FormattingStyle;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import dev.faststats.core.chart.Chart;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
@@ -13,6 +8,7 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.jspecify.annotations.Nullable;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
@@ -28,11 +24,13 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
 public abstract class SimpleMetrics implements Metrics {
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -95,9 +93,10 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected void submitData() {
-        try {
-            var data = createData().toString();
-            var compressed = Zstd.compress(data.getBytes(StandardCharsets.UTF_8), 6);
+        var data = createData().toString();
+        try (var bytes = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+             var input = new GZIPInputStream(bytes)) {
+            var compressed = input.readAllBytes();
             var request = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofByteArray(compressed))
                     .header("Content-Encoding", "zstd")
@@ -154,7 +153,7 @@ public abstract class SimpleMetrics implements Metrics {
                 error("Failed to build chart data: " + chart.getId(), e);
             }
         });
-        
+
         appendDefaultData(charts);
 
         data.addProperty("server_id", config.serverId().toString());
@@ -235,9 +234,9 @@ public abstract class SimpleMetrics implements Metrics {
         protected Config(Path file) throws IOException {
             var json = readOrEmpty(file);
 
-            this.serverId = json.map(object -> UUID.fromString(object.get("serverId").getAsString())).orElseGet(UUID::randomUUID);
-            this.enabled = json.map(object -> object.get("enabled").getAsBoolean()).orElse(true);
-            this.debug = json.map(object -> object.get("debug").getAsBoolean()).orElse(false);
+            this.serverId = json.map(object -> UUID.fromString(object.getProperty("serverId"))).orElseGet(UUID::randomUUID);
+            this.enabled = json.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
+            this.debug = json.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
 
             if (json.isEmpty()) create(file, serverId);
         }
@@ -264,7 +263,7 @@ public abstract class SimpleMetrics implements Metrics {
             return debug;
         }
 
-        private static Optional<JsonObject> readOrEmpty(Path file) throws IOException {
+        private static Optional<Properties> readOrEmpty(Path file) throws IOException {
             if (Files.isRegularFile(file)) {
                 return Optional.of(read(file));
             } else {
@@ -275,19 +274,32 @@ public abstract class SimpleMetrics implements Metrics {
         private static void create(Path file, UUID serverId) throws IOException {
             Files.createDirectories(file.getParent());
             try (var out = Files.newOutputStream(file, StandardOpenOption.CREATE_NEW);
-                 var writer = new JsonWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
-                writer.setFormattingStyle(FormattingStyle.PRETTY);
-                writer.beginObject();
-                writer.name("serverId").value(serverId.toString());
-                writer.name("enabled").value(true);
-                writer.name("debug").value(false);
-                writer.endObject();
+                 var writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
+                var properties = new Properties();
+
+                properties.setProperty("serverId", serverId.toString());
+                properties.setProperty("enabled", Boolean.toString(true));
+                properties.setProperty("debug", Boolean.toString(false));
+
+                var comment = """
+                         FastStats (https://faststats.dev) collects some basic information for plugin authors, like
+                        # how many people use their plugin and their total player count. It's recommended to keep
+                        # metrics enabled, but if you're not comfortable with this, you can turn this setting off.
+                        # There is no performance penalty associated with having metrics enabled, and data sent to
+                        # FastStats is fully anonymous.
+                        
+                        # If you suspect a plugin is collecting personal data or bypassing the "enabled" option,
+                        # please report it to the FastStats team (https://faststats.dev/abuse).
+                        """;
+                properties.store(writer, comment);
             }
         }
 
-        private static JsonObject read(Path file) throws IOException {
-            try (var reader = new JsonReader(Files.newBufferedReader(file, StandardCharsets.UTF_8))) {
-                return JsonParser.parseReader(reader).getAsJsonObject();
+        private static Properties read(Path file) throws IOException {
+            try (var reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                var properties = new Properties();
+                properties.load(reader);
+                return properties;
             }
         }
     }
