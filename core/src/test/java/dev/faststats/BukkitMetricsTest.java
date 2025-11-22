@@ -1,19 +1,26 @@
 package dev.faststats;
 
-import com.github.luben.zstd.Zstd;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.zip.GZIPOutputStream;
 
 public class BukkitMetricsTest {
     @Test
-    public void testCreateData() {
+    public void testCreateData() throws IOException {
         var mock = new MockMetrics(UUID.randomUUID(), "bba4a14eac38779007a6fda4814381", true);
         var data = mock.createData();
         var bytes = data.toString().getBytes(StandardCharsets.UTF_8);
-        var compressed = Zstd.compress(bytes, 6);
-        mock.info(new String(compressed, StandardCharsets.UTF_8) + " (" + compressed.length + " bytes)");
-        mock.info(new String(bytes, StandardCharsets.UTF_8) + " (" + bytes.length + " bytes)");
+        try (var byteOutput = new ByteArrayOutputStream();
+             var output = new GZIPOutputStream(byteOutput)) {
+            output.write(bytes);
+            output.finish();
+            var compressed = byteOutput.toByteArray();
+            mock.info(new String(compressed, StandardCharsets.UTF_8) + " (" + compressed.length + " bytes)");
+            mock.info(new String(bytes, StandardCharsets.UTF_8) + " (" + bytes.length + " bytes)");
+        }
     }
 }

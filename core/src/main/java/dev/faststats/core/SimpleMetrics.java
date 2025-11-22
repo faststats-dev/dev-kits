@@ -8,7 +8,7 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.jspecify.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
@@ -30,7 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public abstract class SimpleMetrics implements Metrics {
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -94,12 +94,15 @@ public abstract class SimpleMetrics implements Metrics {
 
     protected void submitData() {
         var data = createData().toString();
-        try (var bytes = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
-             var input = new GZIPInputStream(bytes)) {
-            var compressed = input.readAllBytes();
+        var bytes = data.getBytes(StandardCharsets.UTF_8);
+        try (var byteOutput = new ByteArrayOutputStream();
+             var output = new GZIPOutputStream(byteOutput)) {
+            output.write(bytes);
+            output.finish();
+            var compressed = byteOutput.toByteArray();
             var request = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofByteArray(compressed))
-                    .header("Content-Encoding", "zstd")
+                    .header("Content-Encoding", "gzip")
                     .header("Content-Type", "application/octet-stream")
                     .header("Authorization", "Bearer " + getToken())
                     .header("User-Agent", "FastStats Metrics")
