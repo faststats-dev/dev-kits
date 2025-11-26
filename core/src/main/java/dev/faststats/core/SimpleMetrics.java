@@ -285,11 +285,11 @@ public abstract class SimpleMetrics implements Metrics {
                 properties.setProperty("debug", Boolean.toString(false));
 
                 var comment = """
-                         FastStats (https://faststats.dev) collects some basic information for plugin authors, like
-                        # how many people use their plugin and their total player count. It's recommended to keep
-                        # metrics enabled, but if you're not comfortable with this, you can turn this setting off.
-                        # There is no performance penalty associated with having metrics enabled, and data sent to
-                        # FastStats is fully anonymous.
+                         FastStats (https://faststats.dev) gathers basic information for plugin developers,
+                        # such as the number of users and total player count.
+                        # Keeping metrics enabled is recommended, but you can disable them if you prefer.
+                        # Enabling metrics does not affect performance,
+                        # and all data sent to FastStats is completely anonymous.
                         
                         # If you suspect a plugin is collecting personal data or bypassing the "enabled" option,
                         # please report it to the FastStats team (https://faststats.dev/abuse).
