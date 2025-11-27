@@ -22,5 +22,5 @@ import static java.lang.annotation.ElementType.PARAMETER;
 @Retention(RetentionPolicy.CLASS)
 @Target({METHOD, FIELD, PARAMETER, LOCAL_VARIABLE})
 public @interface Token {
-    String PATTERN = "[a-z0-9]{30}";
+    String PATTERN = "[a-z0-9]{32}";
 }
