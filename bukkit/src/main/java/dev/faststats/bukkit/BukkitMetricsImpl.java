@@ -95,9 +95,9 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         logger.log(Level.INFO, msg);
     }
 
-    private <T> Optional<T> tryOrEmpty(Supplier<@Nullable T> supplier) {
+    private <T> Optional<T> tryOrEmpty(Supplier<T> supplier) {
         try {
-            return Optional.ofNullable(supplier.get());
+            return Optional.of(supplier.get());
         } catch (NoSuchMethodError | Exception e) {
             error("Failed to call supplier", e);
             return Optional.empty();
