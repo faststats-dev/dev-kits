@@ -235,13 +235,13 @@ public abstract class SimpleMetrics implements Metrics {
         private final UUID serverId;
 
         protected Config(Path file) throws IOException {
-            var json = readOrEmpty(file);
+            var properties = readOrEmpty(file);
 
-            this.serverId = json.map(object -> UUID.fromString(object.getProperty("serverId"))).orElseGet(UUID::randomUUID);
-            this.enabled = json.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
-            this.debug = json.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
+            this.serverId = properties.map(object -> UUID.fromString(object.getProperty("serverId"))).orElseGet(UUID::randomUUID);
+            this.enabled = properties.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
+            this.debug = properties.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
 
-            if (json.isEmpty()) create(file, serverId);
+            if (properties.isEmpty()) create(file, serverId);
         }
 
         @VisibleForTesting
