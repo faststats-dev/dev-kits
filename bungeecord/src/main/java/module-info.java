@@ -1,8 +1,8 @@
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-module dev.faststats.bungeecord {
-    exports dev.faststats.bungeecord;
+module dev.faststats.bungee {
+    exports dev.faststats.bungee;
 
     requires com.google.gson;
     requires dev.faststats.core;

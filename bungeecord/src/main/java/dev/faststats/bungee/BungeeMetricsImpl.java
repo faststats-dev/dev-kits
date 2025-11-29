@@ -1,4 +1,4 @@
-package dev.faststats.bungeecord;
+package dev.faststats.bungee;
 
 import com.google.gson.JsonObject;
 import dev.faststats.core.Metrics;

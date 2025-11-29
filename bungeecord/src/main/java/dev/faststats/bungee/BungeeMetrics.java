@@ -1,4 +1,4 @@
-package dev.faststats.bungeecord;
+package dev.faststats.bungee;
 
 import dev.faststats.core.Metrics;
 import net.md_5.bungee.api.plugin.Plugin;
