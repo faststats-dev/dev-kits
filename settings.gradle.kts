@@ -6,4 +6,5 @@ rootProject.name = "dev-kits"
 include("bukkit")
 include("bungeecord")
 include("core")
+include("minestom")
 include("velocity")
