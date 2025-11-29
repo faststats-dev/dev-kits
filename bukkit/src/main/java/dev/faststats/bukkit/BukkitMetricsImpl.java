@@ -64,7 +64,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         var pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
                 .orElseGet(() -> plugin.getDescription().getVersion());
         var minecraftVersion = tryOrEmpty(server::getMinecraftVersion)
-                .orElse("unknown"); // fixme: bukkit compat
+                .orElseGet(() -> server.getBukkitVersion().split("-", 2)[0]);
         var players = server.getOnlinePlayers().size();
 
         charts.addProperty("online_mode", checkOnlineMode());
