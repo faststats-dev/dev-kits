@@ -45,6 +45,7 @@ public abstract class SimpleMetrics implements Metrics {
     private final URI url;
     private final boolean debug;
 
+    @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
     protected SimpleMetrics(SimpleMetrics.Factory<?> factory, Path config) throws IOException, IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
@@ -234,6 +235,7 @@ public abstract class SimpleMetrics implements Metrics {
         private final boolean enabled;
         private final UUID serverId;
 
+        @Contract(mutates = "io")
         protected Config(Path file) throws IOException {
             var properties = readOrEmpty(file);
 

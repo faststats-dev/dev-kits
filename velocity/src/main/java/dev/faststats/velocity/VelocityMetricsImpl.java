@@ -7,6 +7,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.SimpleMetrics;
 import org.jetbrains.annotations.Async;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -21,6 +22,8 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     private final ProxyServer server;
     private final PluginContainer plugin;
 
+    @Async.Schedule
+    @Contract(mutates = "io")
     private VelocityMetricsImpl(
             SimpleMetrics.Factory<?> factory,
             Logger logger,

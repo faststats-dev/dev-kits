@@ -6,6 +6,7 @@ import dev.faststats.core.SimpleMetrics;
 import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Async;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -21,6 +22,8 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     private final Server server;
     private final Plugin plugin;
 
+    @Async.Schedule
+    @Contract(mutates = "io")
     private BukkitMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IOException, IllegalStateException {
         super(factory, config);
 
