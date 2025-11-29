@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import java.nio.file.Path;
 
 /**
- * Bukkit metrics implementation.
+ * Velocity metrics implementation.
  *
  * @since 0.1.0
  */
