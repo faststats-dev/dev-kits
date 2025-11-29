@@ -40,7 +40,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
 
     @Async.Schedule
     private void startSubmitting() {
-        startSubmitting(0, 30, TimeUnit.MINUTES);
+        startSubmitting(30, 30 * 60, TimeUnit.SECONDS);
     }
 
     @Override

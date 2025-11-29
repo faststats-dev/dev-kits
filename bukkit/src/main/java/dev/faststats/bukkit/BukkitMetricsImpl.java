@@ -36,7 +36,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     @Async.Schedule
     private void startSubmitting() {
-        startSubmitting(0, 30, TimeUnit.MINUTES);
+        startSubmitting(30, 30 * 60, TimeUnit.SECONDS);
     }
 
     private boolean checkOnlineMode() {
