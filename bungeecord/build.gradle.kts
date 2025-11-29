@@ -1,3 +1,5 @@
+val moduleName by extra("dev.faststats.bungeecord")
+
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
 }

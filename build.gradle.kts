@@ -29,9 +29,30 @@ subprojects {
         }
     }
 
+    tasks.withType<JavaCompile>().configureEach {
+        project.findProperty("moduleName")?.let { moduleName ->
+            options.compilerArgs.addAll(listOf("--add-reads", "$moduleName=ALL-UNNAMED"))
+        }
+    }
+
+    tasks.withType<Test>().configureEach {
+        project.findProperty("moduleName")?.let { moduleName ->
+            jvmArgs("--add-reads", "$moduleName=ALL-UNNAMED")
+        }
+    }
+
+    tasks.withType<JavaExec>().configureEach {
+        project.findProperty("moduleName")?.let { moduleName ->
+            jvmArgs("--add-reads", "$moduleName=ALL-UNNAMED")
+        }
+    }
+
     tasks.named<Javadoc>("javadoc") {
         val options = options as StandardJavadocDocletOptions
         options.tags("apiNote:a:API Note:", "implSpec:a:Implementation Requirements:")
+        project.findProperty("moduleName")?.let { moduleName ->
+            options.addStringOption("-add-reads", "$moduleName=ALL-UNNAMED")
+        }
     }
 
     afterEvaluate {

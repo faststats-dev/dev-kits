@@ -4,7 +4,6 @@ import org.jspecify.annotations.NullMarked;
 module dev.faststats.bungeecord {
     exports dev.faststats.bungeecord;
 
-    requires bungeecord.api;
     requires com.google.gson;
     requires dev.faststats.core;
     requires java.logging;
