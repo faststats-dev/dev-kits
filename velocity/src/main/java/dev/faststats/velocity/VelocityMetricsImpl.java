@@ -49,7 +49,6 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         charts.addProperty("online_mode", server.getConfiguration().isOnlineMode());
         charts.addProperty("player_count", server.getPlayerCount());
         charts.addProperty("plugin_version", pluginVersion);
-        charts.addProperty("proxy_vendor", server.getVersion().getVendor());
         charts.addProperty("proxy_version", server.getVersion().getVersion());
         charts.addProperty("server_type", server.getVersion().getName());
     }
