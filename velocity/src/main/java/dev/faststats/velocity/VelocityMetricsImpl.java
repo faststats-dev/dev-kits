@@ -13,9 +13,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics {
     private final Logger logger;
@@ -77,15 +75,6 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         if (!isDebug()) return;
         var msg = "[" + VelocityMetricsImpl.class.getName() + "]: " + message;
         logger.info(msg);
-    }
-
-    private <T> Optional<T> tryOrEmpty(Supplier<@Nullable T> supplier) {
-        try {
-            return Optional.ofNullable(supplier.get());
-        } catch (NoSuchMethodError | Exception e) {
-            error("Failed to call supplier", e);
-            return Optional.empty();
-        }
     }
 
     static class Factory extends SimpleMetrics.Factory<Object> {
