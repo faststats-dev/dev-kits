@@ -46,14 +46,12 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     @Override
     protected void appendDefaultData(JsonObject charts) {
         var pluginVersion = plugin.getDescription().getVersion().orElse("unknown");
-        var size = server.getPlayerCount();
-
         charts.addProperty("online_mode", server.getConfiguration().isOnlineMode());
+        charts.addProperty("player_count", server.getPlayerCount());
         charts.addProperty("plugin_version", pluginVersion);
-        charts.addProperty("server_type", server.getVersion().getName());
-        charts.addProperty("proxy_version", server.getVersion().getVersion());
         charts.addProperty("proxy_vendor", server.getVersion().getVendor());
-        if (size != 0) charts.addProperty("player_count", size);
+        charts.addProperty("proxy_version", server.getVersion().getVersion());
+        charts.addProperty("server_type", server.getVersion().getName());
     }
 
     @Override
