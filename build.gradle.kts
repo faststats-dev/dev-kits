@@ -10,13 +10,13 @@ subprojects {
     }
 
     extensions.configure<JavaPluginExtension> {
-        toolchain.languageVersion = JavaLanguageVersion.of(21)
+        toolchain.languageVersion = JavaLanguageVersion.of(25)
         withSourcesJar()
         withJavadocJar()
     }
 
     tasks.named<JavaCompile>("compileJava") {
-        options.release.set(21)
+        options.release.set(25)
     }
 
     tasks.named<Test>("test") {
