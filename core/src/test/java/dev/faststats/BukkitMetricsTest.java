@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream;
 public class BukkitMetricsTest {
     @Test
     public void testCreateData() throws IOException {
-        var mock = new MockMetrics(UUID.randomUUID(), "bba4a14eac38779007a6fda4814381", true);
+        var mock = new MockMetrics(UUID.randomUUID(), "bba4a14eac38779007a6fda4814381ab", true);
         var data = mock.createData();
         var bytes = data.toString().getBytes(StandardCharsets.UTF_8);
         try (var byteOutput = new ByteArrayOutputStream();
