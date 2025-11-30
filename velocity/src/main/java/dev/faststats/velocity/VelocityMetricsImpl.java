@@ -54,24 +54,18 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     }
 
     @Override
-    protected void error(String message, @Nullable Throwable throwable) {
-        if (!isDebug()) return;
-        var msg = "[" + VelocityMetricsImpl.class.getName() + "]: " + message;
-        logger.error(msg, throwable);
+    protected void printError(String message, @Nullable Throwable throwable) {
+        logger.error(message, throwable);
     }
 
     @Override
-    protected void warn(String message) {
-        if (!isDebug()) return;
-        var msg = "[" + VelocityMetricsImpl.class.getName() + "]: " + message;
-        logger.warn(msg);
+    protected void printInfo(String message) {
+        logger.info(message);
     }
 
     @Override
-    protected void info(String message) {
-        if (!isDebug()) return;
-        var msg = "[" + VelocityMetricsImpl.class.getName() + "]: " + message;
-        logger.info(msg);
+    protected void printWarning(String message) {
+        logger.warn(message);
     }
 
     static class Factory extends SimpleMetrics.Factory<Object> {

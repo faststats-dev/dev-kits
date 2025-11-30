@@ -47,24 +47,18 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
     }
 
     @Override
-    protected void error(String message, @Nullable Throwable throwable) {
-        if (!isDebug()) return;
-        var msg = "[" + BungeeMetricsImpl.class.getName() + "]: " + message;
-        logger.log(Level.SEVERE, msg, throwable);
+    protected void printError(String message, @Nullable Throwable throwable) {
+        logger.log(Level.SEVERE, message, throwable);
     }
 
     @Override
-    protected void warn(String message) {
-        if (!isDebug()) return;
-        var msg = "[" + BungeeMetricsImpl.class.getName() + "]: " + message;
-        logger.log(Level.WARNING, msg);
+    protected void printInfo(String message) {
+        logger.info(message);
     }
 
     @Override
-    protected void info(String message) {
-        if (!isDebug()) return;
-        var msg = "[" + BungeeMetricsImpl.class.getName() + "]: " + message;
-        logger.log(Level.INFO, msg);
+    protected void printWarning(String message) {
+        logger.warning(message);
     }
 
     static final class Factory extends SimpleMetrics.Factory<Plugin> {

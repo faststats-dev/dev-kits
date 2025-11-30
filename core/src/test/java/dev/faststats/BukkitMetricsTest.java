@@ -19,8 +19,8 @@ public class BukkitMetricsTest {
             output.write(bytes);
             output.finish();
             var compressed = byteOutput.toByteArray();
-            mock.info(new String(compressed, StandardCharsets.UTF_8) + " (" + compressed.length + " bytes)");
-            mock.info(new String(bytes, StandardCharsets.UTF_8) + " (" + bytes.length + " bytes)");
+            mock.printInfo(new String(compressed, StandardCharsets.UTF_8) + " (" + compressed.length + " bytes)");
+            mock.printInfo(new String(bytes, StandardCharsets.UTF_8) + " (" + bytes.length + " bytes)");
         }
     }
 }

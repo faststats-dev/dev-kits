@@ -40,21 +40,18 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
     }
 
     @Override
-    protected void error(String message, @Nullable Throwable throwable) {
-        if (!isDebug()) return;
+    protected void printError(String message, @Nullable Throwable throwable) {
         logger.error(message, throwable);
     }
 
     @Override
-    protected void warn(String message) {
-        if (!isDebug()) return;
-        logger.warn(message);
+    protected void printInfo(String message) {
+        logger.info(message);
     }
 
     @Override
-    protected void info(String message) {
-        if (!isDebug()) return;
-        logger.info(message);
+    protected void printWarning(String message) {
+        logger.warn(message);
     }
 
     static final class Factory extends SimpleMetrics.Factory<MinecraftServer> {

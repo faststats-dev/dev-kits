@@ -17,20 +17,19 @@ public class MockMetrics extends SimpleMetrics {
     }
 
     @Override
-    protected void error(String message, @Nullable Throwable throwable) {
-        if (!isDebug()) return;
+    protected void printError(String message, @Nullable Throwable throwable) {
         System.err.println(message);
         if (throwable != null) throwable.printStackTrace(System.err);
     }
 
     @Override
-    protected void warn(String message) {
-        if (isDebug()) System.out.println(message);
+    protected void printInfo(String message) {
+        System.out.println(message);
     }
 
     @Override
-    protected void info(String message) {
-        if (isDebug()) System.out.println(message);
+    protected void printWarning(String message) {
+        System.out.println(message);
     }
 
     @Override

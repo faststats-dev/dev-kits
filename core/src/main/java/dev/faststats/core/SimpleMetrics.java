@@ -182,11 +182,23 @@ public abstract class SimpleMetrics implements Metrics {
     @Contract(mutates = "param1")
     protected abstract void appendDefaultData(JsonObject charts);
 
-    protected abstract void error(String message, @Nullable Throwable throwable);
+    protected void error(String message, @Nullable Throwable throwable) {
+        if (isDebug()) printError("[" + getClass().getName() + "]: " + message, throwable);
+    }
 
-    protected abstract void warn(String message);
+    protected void warn(String message) {
+        if (isDebug()) printWarning("[" + getClass().getName() + "]: " + message);
+    }
 
-    protected abstract void info(String message);
+    protected void info(String message) {
+        if (isDebug()) printInfo("[" + getClass().getName() + "]: " + message);
+    }
+
+    protected abstract void printError(String message, @Nullable Throwable throwable);
+
+    protected abstract void printInfo(String message);
+
+    protected abstract void printWarning(String message);
 
     @Override
     public void shutdown() {
