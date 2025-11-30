@@ -33,6 +33,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 
 public abstract class SimpleMetrics implements Metrics {
+    protected static final String ONBOARDING_MESSAGE = """
+            This plugin uses FastStats to collect anonymous usage statistics.
+            No personal or identifying information is ever collected.
+            To opt out, set 'enabled=false' in the metrics configuration file.
+            Learn more at: https://faststats.dev/info""";
+
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
             .version(HttpClient.Version.HTTP_1_1)
@@ -73,6 +79,10 @@ public abstract class SimpleMetrics implements Metrics {
     @Async.Schedule
     @MustBeInvokedByOverriders
     protected void startSubmitting(int initialDelay, int period, TimeUnit unit) {
+        if (config.firstRun) {
+            for (var s : ONBOARDING_MESSAGE.split("\n")) printInfo(s);
+        }
+
         if (!config.enabled()) {
             warn("Metrics disabled, not starting submission");
             return;
@@ -247,9 +257,10 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected static final class Config implements Metrics.Config {
+        private final UUID serverId;
         private final boolean debug;
         private final boolean enabled;
-        private final UUID serverId;
+        private final boolean firstRun;
 
         @Contract(mutates = "io")
         protected Config(Path file) throws IOException {
@@ -259,7 +270,8 @@ public abstract class SimpleMetrics implements Metrics {
             this.enabled = properties.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
             this.debug = properties.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
 
-            if (properties.isEmpty()) create(file, serverId);
+            this.firstRun = properties.isEmpty();
+            if (this.firstRun) create(file, serverId);
         }
 
         @VisibleForTesting
@@ -267,6 +279,7 @@ public abstract class SimpleMetrics implements Metrics {
             this.serverId = serverId;
             this.enabled = enabled;
             this.debug = debug;
+            this.firstRun = false;
         }
 
         @Override
