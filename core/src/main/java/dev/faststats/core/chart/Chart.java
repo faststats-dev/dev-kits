@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -50,21 +49,51 @@ public interface Chart<T> {
     Optional<JsonElement> getData() throws Exception;
 
     /**
-     * Create a bar chart.
+     * Create a string array chart.
      *
      * @param id       the chart id
      * @param callable the chart data callable
-     * @return the bar chart
+     * @return the string array chart
      * @throws IllegalArgumentException if the chart id is invalid
      * @apiNote The callable must be thread-safe and pure (i.e. not modify any shared state).
      * @see #compute()
-     * @since 0.1.0
+     * @since 0.5.0
      */
-    // todo: introduce a better way to transmit multiple values
-    @Deprecated
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<Map<String, Number>> bar(@ChartId String id, Callable<@Nullable Map<String, Number>> callable) throws IllegalArgumentException {
-        return new SimpleBarChart(id, callable);
+    static Chart<String[]> stringArray(@ChartId String id, Callable<String @Nullable []> callable) throws IllegalArgumentException {
+        return new ArrayChart<>(id, callable);
+    }
+
+    /**
+     * Create a boolean array chart.
+     *
+     * @param id       the chart id
+     * @param callable the chart data callable
+     * @return the boolean array chart
+     * @throws IllegalArgumentException if the chart id is invalid
+     * @apiNote The callable must be thread-safe and pure (i.e. not modify any shared state).
+     * @see #compute()
+     * @since 0.5.0
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    static Chart<Boolean[]> booleanArray(@ChartId String id, Callable<Boolean @Nullable []> callable) throws IllegalArgumentException {
+        return new ArrayChart<>(id, callable);
+    }
+
+    /**
+     * Create a number array chart.
+     *
+     * @param id       the chart id
+     * @param callable the chart data callable
+     * @return the number array chart
+     * @throws IllegalArgumentException if the chart id is invalid
+     * @apiNote The callable must be thread-safe and pure (i.e. not modify any shared state).
+     * @see #compute()
+     * @since 0.5.0
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    static Chart<Number[]> numberArray(@ChartId String id, Callable<Number @Nullable []> callable) throws IllegalArgumentException {
+        return new ArrayChart<>(id, callable);
     }
 
     /**
