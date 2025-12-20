@@ -8,5 +8,5 @@ tasks.compileJava {
 
 dependencies {
     api(project(":core"))
-    compileOnly("net.minestom:minestom:2025.12.19-1.21.10")
+    compileOnly("net.minestom:minestom:2025.12.20-1.21.11")
 }
