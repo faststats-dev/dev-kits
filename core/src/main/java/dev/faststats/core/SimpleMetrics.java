@@ -271,7 +271,9 @@ public abstract class SimpleMetrics implements Metrics {
             this.serverId = properties.map(object -> object.getProperty("serverId")).map(string -> {
                 try {
                     var trimmed = string.trim();
-                    return UUID.fromString(trimmed.length() > 36 ? trimmed.substring(0, 36) : trimmed);
+                    var corrected = trimmed.length() > 36 ? trimmed.substring(0, 36) : trimmed;
+                    if (!corrected.equals(string)) saveConfig.set(true);
+                    return UUID.fromString(corrected);
                 } catch (IllegalArgumentException e) {
                     saveConfig.set(true);
                     return UUID.randomUUID();
