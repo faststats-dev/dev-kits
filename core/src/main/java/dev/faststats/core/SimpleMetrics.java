@@ -20,7 +20,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Optional;
@@ -30,6 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
 
 public abstract class SimpleMetrics implements Metrics {
@@ -265,13 +265,23 @@ public abstract class SimpleMetrics implements Metrics {
         @Contract(mutates = "io")
         protected Config(Path file) throws IOException {
             var properties = readOrEmpty(file);
+            this.firstRun = properties.isEmpty();
+            var saveConfig = new AtomicBoolean(this.firstRun);
 
-            this.serverId = properties.map(object -> UUID.fromString(object.getProperty("serverId"))).orElseGet(UUID::randomUUID);
+            this.serverId = properties.map(object -> object.getProperty("serverId")).map(string -> {
+                try {
+                    var trimmed = string.trim();
+                    return UUID.fromString(trimmed.length() > 36 ? trimmed.substring(0, 36) : trimmed);
+                } catch (IllegalArgumentException e) {
+                    saveConfig.set(true);
+                    return UUID.randomUUID();
+                }
+            }).orElseGet(UUID::randomUUID);
+
             this.enabled = properties.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
             this.debug = properties.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
 
-            this.firstRun = properties.isEmpty();
-            if (this.firstRun) create(file, serverId);
+            if (saveConfig.get()) save(file, serverId, enabled, debug);
         }
 
         @VisibleForTesting
@@ -305,15 +315,15 @@ public abstract class SimpleMetrics implements Metrics {
             }
         }
 
-        private static void create(Path file, UUID serverId) throws IOException {
+        private static void save(Path file, UUID serverId, boolean enabled, boolean debug) throws IOException {
             Files.createDirectories(file.getParent());
-            try (var out = Files.newOutputStream(file, StandardOpenOption.CREATE_NEW);
+            try (var out = Files.newOutputStream(file);
                  var writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
                 var properties = new Properties();
 
                 properties.setProperty("serverId", serverId.toString());
-                properties.setProperty("enabled", Boolean.toString(true));
-                properties.setProperty("debug", Boolean.toString(false));
+                properties.setProperty("enabled", Boolean.toString(enabled));
+                properties.setProperty("debug", Boolean.toString(debug));
 
                 var comment = """
                          FastStats (https://faststats.dev) gathers basic information for plugin developers,
