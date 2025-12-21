@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -28,7 +27,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
             ProxyServer server,
             Path config,
             PluginContainer plugin
-    ) throws IOException, IllegalStateException {
+    ) throws IllegalStateException {
         super(factory, config);
 
         this.logger = logger;
@@ -80,7 +79,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         }
 
         @Override
-        public Metrics create(Object plugin) throws IOException, IllegalStateException, IllegalArgumentException {
+        public Metrics create(Object plugin) throws IllegalStateException, IllegalArgumentException {
             var faststats = dataDirectory.resolveSibling("faststats");
             var container = server.getPluginManager().ensurePluginContainer(plugin);
             return new VelocityMetricsImpl(this, logger, server, faststats.resolve("config.properties"), container);

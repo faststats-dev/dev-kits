@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private BukkitMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IOException, IllegalStateException {
+    private BukkitMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -99,7 +98,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     static final class Factory extends SimpleMetrics.Factory<Plugin> {
         @Override
-        public Metrics create(Plugin plugin) throws IOException, IllegalStateException {
+        public Metrics create(Plugin plugin) throws IllegalStateException {
             var dataFolder = plugin.getServer().getPluginsFolder().toPath().resolve("faststats");
             var config = dataFolder.resolve("config.properties");
             return new BukkitMetricsImpl(this, plugin, config);

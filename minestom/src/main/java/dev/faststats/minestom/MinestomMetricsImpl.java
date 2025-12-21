@@ -11,7 +11,6 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +19,7 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private MinestomMetricsImpl(SimpleMetrics.Factory<?> factory, Path config) throws IOException, IllegalStateException {
+    private MinestomMetricsImpl(SimpleMetrics.Factory<?> factory, Path config) throws IllegalStateException {
         super(factory, config);
 
         startSubmitting();
@@ -56,7 +55,7 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
 
     static final class Factory extends SimpleMetrics.Factory<MinecraftServer> {
         @Override
-        public Metrics create(MinecraftServer server) throws IOException, IllegalStateException {
+        public Metrics create(MinecraftServer server) throws IllegalStateException {
             var config = Path.of("faststats", "config.properties");
             return new MinestomMetricsImpl(this, config);
         }

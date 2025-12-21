@@ -107,7 +107,6 @@ public interface Metrics {
          *
          * @param plugin the plugin instance
          * @return the metrics instance
-         * @throws IOException              if the config file cannot be read or written
          * @throws IllegalStateException    if the token is not specified
          * @throws IllegalArgumentException if the given object is not a valid plugin
          * @see #token(String)
@@ -115,7 +114,7 @@ public interface Metrics {
          */
         @Async.Schedule
         @Contract(value = "_ -> new", mutates = "io")
-        Metrics create(T plugin) throws IOException, IllegalStateException, IllegalArgumentException;
+        Metrics create(T plugin) throws IllegalStateException, IllegalArgumentException;
     }
 
     /**

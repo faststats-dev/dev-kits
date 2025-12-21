@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -22,7 +21,7 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private BungeeMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IOException, IllegalStateException {
+    private BungeeMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -63,7 +62,7 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
 
     static final class Factory extends SimpleMetrics.Factory<Plugin> {
         @Override
-        public Metrics create(Plugin plugin) throws IOException, IllegalStateException {
+        public Metrics create(Plugin plugin) throws IllegalStateException {
             var dataFolder = plugin.getProxy().getPluginsFolder().toPath().resolve("faststats");
             var config = dataFolder.resolve("config.properties");
             return new BungeeMetricsImpl(this, plugin, config);

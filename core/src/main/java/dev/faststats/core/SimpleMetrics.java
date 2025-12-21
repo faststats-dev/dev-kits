@@ -53,7 +53,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
-    protected SimpleMetrics(SimpleMetrics.Factory<?> factory, Path config) throws IOException, IllegalStateException {
+    protected SimpleMetrics(SimpleMetrics.Factory<?> factory, Path config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
         this.charts = Set.copyOf(factory.charts);
@@ -263,7 +263,7 @@ public abstract class SimpleMetrics implements Metrics {
         private final boolean firstRun;
 
         @Contract(mutates = "io")
-        protected Config(Path file) throws IOException {
+        protected Config(Path file) {
             var properties = readOrEmpty(file);
             this.firstRun = properties.isEmpty();
             var saveConfig = new AtomicBoolean(this.firstRun);
@@ -283,7 +283,11 @@ public abstract class SimpleMetrics implements Metrics {
             this.enabled = properties.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
             this.debug = properties.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
 
-            if (saveConfig.get()) save(file, serverId, enabled, debug);
+            if (saveConfig.get()) try {
+                save(file, serverId, enabled, debug);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to save metrics config", e);
+            }
         }
 
         @VisibleForTesting
@@ -309,11 +313,14 @@ public abstract class SimpleMetrics implements Metrics {
             return debug;
         }
 
-        private static Optional<Properties> readOrEmpty(Path file) throws IOException {
-            if (Files.isRegularFile(file)) {
-                return Optional.of(read(file));
-            } else {
-                return Optional.empty();
+        private static Optional<Properties> readOrEmpty(Path file) {
+            if (!Files.isRegularFile(file)) return Optional.empty();
+            try (var reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                var properties = new Properties();
+                properties.load(reader);
+                return Optional.of(properties);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read metrics config", e);
             }
         }
 
@@ -338,14 +345,6 @@ public abstract class SimpleMetrics implements Metrics {
                         # please report it to the FastStats team (https://faststats.dev/abuse).
                         """;
                 properties.store(writer, comment);
-            }
-        }
-
-        private static Properties read(Path file) throws IOException {
-            try (var reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-                var properties = new Properties();
-                properties.load(reader);
-                return properties;
             }
         }
     }
