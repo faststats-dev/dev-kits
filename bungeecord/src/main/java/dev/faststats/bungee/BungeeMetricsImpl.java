@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,11 +28,6 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
         this.plugin = plugin;
 
         startSubmitting();
-    }
-
-    @Async.Schedule
-    private void startSubmitting() {
-        startSubmitting(30, 30 * 60, TimeUnit.SECONDS);
     }
 
     @Override

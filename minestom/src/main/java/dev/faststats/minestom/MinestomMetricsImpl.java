@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 
 final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics {
     private final Logger logger = LoggerFactory.getLogger(MinestomMetricsImpl.class);
@@ -23,11 +22,6 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
         super(factory, config);
 
         startSubmitting();
-    }
-
-    @Async.Schedule
-    private void startSubmitting() {
-        startSubmitting(30, 30 * 60, TimeUnit.SECONDS);
     }
 
     @Override

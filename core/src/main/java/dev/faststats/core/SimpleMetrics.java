@@ -79,9 +79,21 @@ public abstract class SimpleMetrics implements Metrics {
         this.url = url;
     }
 
+    protected long getInitialDelay() {
+        return TimeUnit.MINUTES.toMillis(Long.getLong("faststats.initial-delay", 30));
+    }
+
+    protected long getPeriod() {
+        return TimeUnit.MINUTES.toMillis(30);
+    }
+
     @Async.Schedule
     @MustBeInvokedByOverriders
-    protected void startSubmitting(int initialDelay, int period, TimeUnit unit) {
+    protected void startSubmitting() {
+        startSubmitting(getInitialDelay(), getPeriod(), TimeUnit.MILLISECONDS);
+    }
+
+    private void startSubmitting(long initialDelay, long period, TimeUnit unit) {
         if (Boolean.getBoolean("faststats.first-run")) return;
 
         if (config.firstRun) {

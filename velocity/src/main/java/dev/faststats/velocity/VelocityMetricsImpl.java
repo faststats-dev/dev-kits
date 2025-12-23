@@ -12,7 +12,6 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 
 final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics {
     private final Logger logger;
@@ -35,11 +34,6 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         this.plugin = plugin;
 
         startSubmitting();
-    }
-
-    @Async.Schedule
-    private void startSubmitting() {
-        startSubmitting(30, 30 * 60, TimeUnit.SECONDS);
     }
 
     @Override
