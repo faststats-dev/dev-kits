@@ -33,6 +33,17 @@ public interface Metrics {
     Config getConfig();
 
     /**
+     * Shuts down the metrics submission.
+     * <p>
+     * This method should be called when the application is shutting down.
+     *
+     * @apiNote This method is called automatically under normal circumstances.
+     * @since 0.1.0
+     */
+    @Contract(mutates = "this")
+    void shutdown();
+
+    /**
      * A metrics factory.
      *
      * @since 0.1.0

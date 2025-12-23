@@ -221,8 +221,9 @@ public abstract class SimpleMetrics implements Metrics {
 
     protected abstract void printWarning(String message);
 
-    protected void shutdown() {
-        if (executor == null) throw new IllegalStateException("Not submitting metrics");
+    @Override
+    public void shutdown() {
+        if (executor == null) return;
         info("Shutting down metrics submission");
         executor.shutdown();
         executor = null;
