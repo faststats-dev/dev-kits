@@ -4,7 +4,6 @@ import dev.faststats.core.chart.Chart;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
@@ -32,16 +31,6 @@ public interface Metrics {
      */
     @Contract(pure = true)
     Config getConfig();
-
-    /**
-     * Shuts down the metrics submission.
-     * <p>
-     * This method should be called when the application is shutting down.
-     *
-     * @since 0.1.0
-     */
-    @Contract(mutates = "this")
-    void shutdown();
 
     /**
      * A metrics factory.
