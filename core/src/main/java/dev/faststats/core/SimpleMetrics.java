@@ -343,6 +343,8 @@ public abstract class SimpleMetrics implements Metrics {
                         
                         # If you suspect a plugin is collecting personal data or bypassing the "enabled" option,
                         # please report it to the FastStats team (https://faststats.dev/abuse).
+                        
+                        # For more information, visit https://faststats.dev/info
                         """;
                 properties.store(writer, comment);
             }
