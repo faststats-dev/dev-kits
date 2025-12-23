@@ -37,7 +37,10 @@ public abstract class SimpleMetrics implements Metrics {
             This plugin uses FastStats to collect anonymous usage statistics.
             No personal or identifying information is ever collected.
             To opt out, set 'enabled=false' in the metrics configuration file.
-            Learn more at: https://faststats.dev/info""";
+            Learn more at: https://faststats.dev/info
+            
+            Since this is your first start with FastStats, metrics submission will not start
+            until you restart the server to allow you to opt out if you prefer.""";
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
@@ -79,8 +82,12 @@ public abstract class SimpleMetrics implements Metrics {
     @Async.Schedule
     @MustBeInvokedByOverriders
     protected void startSubmitting(int initialDelay, int period, TimeUnit unit) {
+        if (Boolean.getBoolean("faststats.first-run")) return;
+
         if (config.firstRun) {
             for (var s : ONBOARDING_MESSAGE.split("\n")) printInfo(s);
+            System.setProperty("faststats.first-run", "true");
+            return;
         }
 
         if (!config.enabled()) {
