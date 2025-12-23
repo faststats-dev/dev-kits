@@ -80,7 +80,7 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected long getInitialDelay() {
-        return TimeUnit.MINUTES.toMillis(Long.getLong("faststats.initial-delay", 30));
+        return TimeUnit.SECONDS.toMillis(Long.getLong("faststats.initial-delay", 30));
     }
 
     protected long getPeriod() {
