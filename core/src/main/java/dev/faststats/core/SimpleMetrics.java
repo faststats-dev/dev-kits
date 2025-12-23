@@ -97,7 +97,11 @@ public abstract class SimpleMetrics implements Metrics {
         if (Boolean.getBoolean("faststats.first-run")) return;
 
         if (config.firstRun) {
+
+            printInfo("-".repeat(80));
             for (var s : ONBOARDING_MESSAGE.split("\n")) printInfo(s);
+            printInfo("-".repeat(80));
+
             System.setProperty("faststats.first-run", "true");
             return;
         }
