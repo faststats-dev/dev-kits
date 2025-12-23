@@ -4,11 +4,6 @@ import com.google.gson.JsonObject;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.SimpleMetrics;
 import org.bukkit.Server;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
@@ -16,12 +11,11 @@ import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics, Listener {
+final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     private final Logger logger;
     private final Server server;
     private final Plugin plugin;
@@ -35,23 +29,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics, Li
         this.server = plugin.getServer();
         this.plugin = plugin;
 
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        if (plugin.isEnabled()) startSubmitting();
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    private void onServerLoad(ServerLoadEvent event) {
         startSubmitting();
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    private void onPluginDisable(PluginDisableEvent event) {
-        if (event.getPlugin().equals(plugin)) shutdown();
-    }
-
-    @Async.Schedule
-    private void startSubmitting() {
-        startSubmitting(0, 30, TimeUnit.MINUTES);
     }
 
     private boolean checkOnlineMode() {
