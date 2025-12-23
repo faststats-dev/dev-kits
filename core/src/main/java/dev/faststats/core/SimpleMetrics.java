@@ -61,7 +61,7 @@ public abstract class SimpleMetrics implements Metrics {
 
         this.charts = Set.copyOf(factory.charts);
         this.config = new Config(config);
-        this.debug = factory.debug;
+        this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || this.config.debug();
         this.token = factory.token;
         this.url = factory.url;
     }
@@ -209,7 +209,7 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected boolean isDebug() {
-        return debug || config.debug();
+        return debug;
     }
 
     @Contract(mutates = "param1")
