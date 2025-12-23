@@ -94,7 +94,10 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     private void startSubmitting(long initialDelay, long period, TimeUnit unit) {
-        if (Boolean.getBoolean("faststats.first-run")) return;
+        if (Boolean.getBoolean("faststats.first-run")) {
+            info("Skipping metrics submission due to first-run flag");
+            return;
+        }
 
         if (config.firstRun) {
 
