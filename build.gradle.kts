@@ -124,7 +124,7 @@ subprojects {
         extensions.configure<PublishingExtension> {
             publications.create<MavenPublication>("maven") {
                 artifactId = project.name
-                groupId = "dev.faststats.metrics.java$javaVersion"
+                groupId = "dev.faststats.metrics.java-$javaVersion"
 
                 pom {
                     url.set("https://faststats.dev/docs")
@@ -143,7 +143,7 @@ subprojects {
             downgradedVersions[project.name]?.forEach { javaVersion ->
                 publications.create<MavenPublication>("mavenJava${javaVersion}") {
                     artifactId = project.name
-                    groupId = "dev.faststats.metrics.java$javaVersion"
+                    groupId = "dev.faststats.metrics.java-$javaVersion"
 
                     pom {
                         url.set("https://faststats.dev/docs")
