@@ -1,7 +1,26 @@
+import xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar
+
+plugins {
+    id("java")
+    id("xyz.wagyourtail.jvmdowngrader") version "1.3.4" apply false
+}
+
+val downgradedVersions = mapOf(
+    "bukkit" to setOf(8, 11, 16),
+    "bungeecord" to setOf(8, 11, 16),
+    "core" to setOf(8, 11, 16),
+    "velocity" to setOf(17)
+)
+val javaVersion = 21
+
 subprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
+
+    if (downgradedVersions.containsKey(project.name)) {
+        apply(plugin = "xyz.wagyourtail.jvmdowngrader")
+    }
 
     group = "dev.faststats.metrics"
 
@@ -10,17 +29,17 @@ subprojects {
     }
 
     extensions.configure<JavaPluginExtension> {
-        toolchain.languageVersion = JavaLanguageVersion.of(21)
+        toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
         withSourcesJar()
         withJavadocJar()
     }
 
-    tasks.named<JavaCompile>("compileJava") {
-        options.release.set(21)
+    tasks.compileJava {
+        options.release.set(javaVersion)
     }
 
-    tasks.named<Test>("test") {
-        dependsOn(tasks.named("javadoc"))
+    tasks.test {
+        dependsOn(tasks.javadoc)
         useJUnitPlatform()
         testLogging {
             events("passed", "skipped", "failed")
@@ -47,7 +66,7 @@ subprojects {
         }
     }
 
-    tasks.named<Javadoc>("javadoc") {
+    tasks.javadoc {
         val options = options as StandardJavadocDocletOptions
         options.tags("apiNote:a:API Note:", "implSpec:a:Implementation Requirements:")
         project.findProperty("moduleName")?.let { moduleName ->
@@ -55,10 +74,56 @@ subprojects {
         }
     }
 
+    tasks.build {
+        if (!downgradedVersions.containsKey(project.name)) return@build
+        dependsOn(tasks.named("shadeDowngradedApi"))
+    }
+
+    downgradedVersions[project.name]?.forEach { javaVersion ->
+        // Create downgradeJar task
+        tasks.register<DowngradeJar>("downgradeJar$javaVersion") {
+            group = "jvmdowngrader"
+            description = "Downgrade JAR to Java $javaVersion compatibility"
+
+            dependsOn(tasks.jar)
+
+            inputFile.set(tasks.jar.flatMap { it.archiveFile })
+            downgradeTo.set(JavaVersion.toVersion(javaVersion))
+            classpath = (sourceSets["main"].compileClasspath)
+            archiveClassifier.set("java-$javaVersion")
+        }
+
+        // Create downgradeSources task
+        tasks.register<DowngradeJar>("downgradeSources$javaVersion") {
+            group = "jvmdowngrader"
+            description = "Downgrade sources JAR to Java $javaVersion compatibility"
+
+            dependsOn(tasks.named("sourcesJar"))
+
+            inputFile.set(tasks.named<Jar>("sourcesJar").flatMap { it.archiveFile })
+            downgradeTo.set(JavaVersion.toVersion(javaVersion))
+            classpath = (sourceSets["main"].compileClasspath)
+            archiveClassifier.set("java-$javaVersion-sources")
+        }
+
+        // Create downgradeJavadoc task
+        tasks.register<DowngradeJar>("downgradeJavadoc$javaVersion") {
+            group = "jvmdowngrader"
+            description = "Downgrade javadoc JAR to Java $javaVersion compatibility"
+
+            dependsOn(tasks.named("javadocJar"))
+
+            inputFile.set(tasks.named<Jar>("javadocJar").flatMap { it.archiveFile })
+            downgradeTo.set(JavaVersion.toVersion(javaVersion))
+            classpath = (sourceSets["main"].compileClasspath)
+            archiveClassifier.set("java-$javaVersion-javadoc")
+        }
+    }
+
     afterEvaluate {
         extensions.configure<PublishingExtension> {
             publications.create<MavenPublication>("maven") {
-                artifactId = project.name
+                artifactId = "${project.name}-java-$javaVersion"
                 groupId = "dev.faststats.metrics"
 
                 pom {
@@ -72,6 +137,42 @@ subprojects {
                 }
 
                 from(components["java"])
+            }
+
+            // Create publications for downgraded versions
+            downgradedVersions[project.name]?.forEach { javaVersion ->
+                publications.create<MavenPublication>("mavenJava${javaVersion}") {
+                    artifactId = "${project.name}-java-$javaVersion"
+                    groupId = "dev.faststats.metrics"
+
+                    pom {
+                        url.set("https://faststats.dev/docs")
+                        scm {
+                            val repository = "faststats-dev/dev-kits"
+                            url.set("https://github.com/$repository")
+                            connection.set("scm:git:git://github.com/$repository.git")
+                            developerConnection.set("scm:git:ssh://github.com/$repository.git")
+                        }
+                        description.set("Downgraded to Java $javaVersion compatibility")
+                    }
+
+                    // Add downgraded jar
+                    artifact(tasks.named("downgradeJar$javaVersion"))
+
+                    // Add downgraded sources if available
+                    tasks.findByName("downgradeSources$javaVersion")?.let { sourcesTask ->
+                        artifact(sourcesTask) {
+                            classifier = "sources"
+                        }
+                    }
+
+                    // Add downgraded javadoc if available
+                    tasks.findByName("downgradeJavadoc$javaVersion")?.let { javadocTask ->
+                        artifact(javadocTask) {
+                            classifier = "javadoc"
+                        }
+                    }
+                }
             }
 
             repositories {
