@@ -11,7 +11,10 @@ val downgradedVersions = mapOf(
     "core" to setOf(8, 11, 16),
     "velocity" to setOf(17)
 )
-val javaVersion = 21
+val javaVersionsOverride = mapOf(
+    "minestom" to 25
+)
+val defaultJavaVersion = 21
 
 subprojects {
     apply(plugin = "java")
@@ -28,6 +31,8 @@ subprojects {
         mavenCentral()
     }
 
+    val javaVersion = javaVersionsOverride[project.name] ?: defaultJavaVersion
+    
     extensions.configure<JavaPluginExtension> {
         toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
         withSourcesJar()
