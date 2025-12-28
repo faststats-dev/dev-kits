@@ -5,11 +5,11 @@ plugins {
     id("xyz.wagyourtail.jvmdowngrader") version "1.3.4" apply false
 }
 
-val downgradedVersions = mapOf(
-    "bukkit" to setOf(8, 11, 16),
-    "bungeecord" to setOf(8, 11, 16),
-    "core" to setOf(8, 11, 16),
-    "velocity" to setOf(17)
+val downgradedVersions = mapOf<String, Set<Int>>(
+//    "bukkit" to setOf(8, 11, 16),
+//    "bungeecord" to setOf(8, 11, 16),
+//    "core" to setOf(8, 11, 16),
+//    "velocity" to setOf(17)
 )
 val javaVersionsOverride = mapOf(
     "minestom" to 25
@@ -32,7 +32,7 @@ subprojects {
     }
 
     val javaVersion = javaVersionsOverride[project.name] ?: defaultJavaVersion
-    
+
     extensions.configure<JavaPluginExtension> {
         toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
         withSourcesJar()
@@ -129,7 +129,7 @@ subprojects {
         extensions.configure<PublishingExtension> {
             publications.create<MavenPublication>("maven") {
                 artifactId = project.name
-                groupId = "dev.faststats.metrics.java-$javaVersion"
+                groupId = "dev.faststats.metrics"
 
                 pom {
                     url.set("https://faststats.dev/docs")
