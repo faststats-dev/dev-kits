@@ -33,7 +33,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     private boolean checkOnlineMode() {
-        return tryOrEmpty(server.getServerConfig()::isProxyOnlineMode)
+        return tryOrEmpty(() -> server.getServerConfig().isProxyOnlineMode())
                 .or(() -> tryOrEmpty(this::isProxyOnlineMode))
                 .orElseGet(server::getOnlineMode);
     }
