@@ -119,7 +119,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     private <T> Optional<T> tryOrEmpty(Supplier<T> supplier) {
         try {
             return Optional.of(supplier.get());
-        } catch (NoSuchMethodError | Exception e) {
+        } catch (Throwable e) {
             return Optional.empty();
         }
     }

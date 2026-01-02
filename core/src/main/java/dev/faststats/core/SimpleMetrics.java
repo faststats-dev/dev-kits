@@ -132,11 +132,11 @@ public abstract class SimpleMetrics implements Metrics {
         executor.scheduleAtFixedRate(() -> {
             try {
                 submitAsync();
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 System.err.println("Failed to submit metrics");
-                e.printStackTrace(System.err);
-                printError("Failed to submit metrics", e);
-                error("Failed to submit metrics", e);
+                t.printStackTrace(System.err);
+                printError("Failed to submit metrics", t);
+                error("Failed to submit metrics", t);
             }
         }, initialDelay, period, unit);
     }
