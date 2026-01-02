@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
