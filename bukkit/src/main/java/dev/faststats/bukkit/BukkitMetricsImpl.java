@@ -120,6 +120,9 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         try {
             return Optional.of(supplier.get());
         } catch (Throwable e) {
+            printError("Failed to get value", e);
+            System.err.println("Failed to get value");
+            e.printStackTrace(System.err);
             return Optional.empty();
         }
     }
