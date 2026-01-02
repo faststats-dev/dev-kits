@@ -33,7 +33,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     private boolean checkOnlineMode() {
-        return tryOrEmpty(server.getServerConfig()::isProxyOnlineMode)
+        return tryOrEmpty(() -> server.getServerConfig().isProxyOnlineMode())
                 .or(() -> tryOrEmpty(this::isProxyOnlineMode))
                 .orElseGet(server::getOnlineMode);
     }
@@ -52,12 +52,14 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "Convert2MethodRef"})
     protected void appendDefaultData(JsonObject charts) {
         var pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
                 .orElseGet(() -> plugin.getDescription().getVersion());
-        var minecraftVersion = tryOrEmpty(server::getMinecraftVersion)
-                .orElseGet(() -> server.getBukkitVersion().split("-", 2)[0]);
+
+        var minecraftVersion = tryOrEmpty(() -> server.getMinecraftVersion())
+                .or(() -> tryOrEmpty(() -> server.getBukkitVersion().split("-", 2)[0]))
+                .orElseGet(() -> server.getVersion().split("\\(MC: |\\)", 3)[1]);
 
         charts.addProperty("minecraft_version", minecraftVersion);
         charts.addProperty("online_mode", checkOnlineMode());

@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -110,7 +111,7 @@ public abstract class SimpleMetrics implements Metrics {
         }
 
         var enabled = Boolean.parseBoolean(System.getProperty("faststats.enabled", "true"));
-        
+
         if (!config.enabled() || !enabled) {
             warn("Metrics disabled, not starting submission");
             return;
@@ -128,21 +129,34 @@ public abstract class SimpleMetrics implements Metrics {
         });
 
         info("Starting metrics submission");
-        executor.scheduleAtFixedRate(this::submitData, initialDelay, period, unit);
+        executor.scheduleAtFixedRate(() -> {
+            try {
+                submitAsync();
+            } catch (Throwable t) {
+                error("Failed to submit metrics", t);
+            }
+        }, initialDelay, period, unit);
     }
 
     protected boolean isSubmitting() {
         return executor != null && !executor.isShutdown();
     }
 
-    protected void submitData() {
+    protected CompletableFuture<Boolean> submitAsync() throws IOException {
         var data = createData().toString();
         var bytes = data.getBytes(StandardCharsets.UTF_8);
+
+        info("Uncompressed data: " + data);
+
         try (var byteOutput = new ByteArrayOutputStream();
              var output = new GZIPOutputStream(byteOutput)) {
+
             output.write(bytes);
             output.finish();
+
             var compressed = byteOutput.toByteArray();
+            info("Compressed size: " + compressed.length + " bytes");
+
             var request = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofByteArray(compressed))
                     .header("Content-Encoding", "gzip")
@@ -154,31 +168,34 @@ public abstract class SimpleMetrics implements Metrics {
                     .build();
 
             info("Sending metrics to: " + url);
-            info("Uncompressed data: " + data);
-            info("Compressed size: " + compressed.length + " bytes");
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).thenApply(response -> {
+                var statusCode = response.statusCode();
+                var body = response.body();
 
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-            var statusCode = response.statusCode();
-            var body = response.body();
-
-            if (statusCode >= 200 && statusCode < 300) {
-                info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
-            } else if (statusCode >= 300 && statusCode < 400) {
-                warn("Received redirect response from metrics server: " + statusCode + " (" + body + ")");
-            } else if (statusCode >= 400 && statusCode < 500) {
-                error("Submitted invalid request to metrics server: " + statusCode + " (" + body + ")", null);
-            } else if (statusCode >= 500 && statusCode < 600) {
-                error("Received server error response from metrics server: " + statusCode + " (" + body + ")", null);
-            } else {
-                warn("Received unexpected response from metrics server: " + statusCode + " (" + body + ")");
-            }
-
-        } catch (HttpConnectTimeoutException e) {
-            error("Metrics submission timed out after 3 seconds: " + url, null);
-        } catch (ConnectException e) {
-            error("Failed to connect to metrics server: " + url, null);
-        } catch (Exception e) {
-            error("Failed to submit metrics", e);
+                if (statusCode >= 200 && statusCode < 300) {
+                    info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
+                    return true;
+                } else if (statusCode >= 300 && statusCode < 400) {
+                    warn("Received redirect response from metrics server: " + statusCode + " (" + body + ")");
+                } else if (statusCode >= 400 && statusCode < 500) {
+                    error("Submitted invalid request to metrics server: " + statusCode + " (" + body + ")", null);
+                } else if (statusCode >= 500 && statusCode < 600) {
+                    error("Received server error response from metrics server: " + statusCode + " (" + body + ")", null);
+                } else {
+                    warn("Received unexpected response from metrics server: " + statusCode + " (" + body + ")");
+                }
+                return false;
+            }).exceptionally(throwable -> {
+                var cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                if (cause instanceof HttpConnectTimeoutException) {
+                    error("Metrics submission timed out after 3 seconds: " + url, null);
+                } else if (cause instanceof ConnectException) {
+                    error("Failed to connect to metrics server: " + url, null);
+                } else {
+                    error("Failed to submit metrics", throwable);
+                }
+                return false;
+            });
         }
     }
 
@@ -195,7 +212,7 @@ public abstract class SimpleMetrics implements Metrics {
         this.charts.forEach(chart -> {
             try {
                 chart.getData().ifPresent(chartData -> charts.add(chart.getId(), chartData));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 error("Failed to build chart data: " + chart.getId(), e);
             }
         });
