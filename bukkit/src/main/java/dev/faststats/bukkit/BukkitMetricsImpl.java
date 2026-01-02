@@ -85,7 +85,6 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         try {
             return Optional.of(supplier.get());
         } catch (NoSuchMethodError | Exception e) {
-            error("Failed to call supplier", e);
             return Optional.empty();
         }
     }
