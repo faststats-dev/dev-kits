@@ -200,6 +200,8 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected JsonObject createData() {
+        System.out.println("#createData");
+        printInfo("#createData");
         var data = new JsonObject();
         var charts = new JsonObject();
 
@@ -208,6 +210,9 @@ public abstract class SimpleMetrics implements Metrics {
         charts.addProperty("os_name", System.getProperty("os.name"));
         charts.addProperty("os_version", System.getProperty("os.version"));
         charts.addProperty("core_count", Runtime.getRuntime().availableProcessors());
+
+        System.out.println(charts);
+        printInfo(charts.toString());
 
         this.charts.forEach(chart -> {
             try {
@@ -218,9 +223,15 @@ public abstract class SimpleMetrics implements Metrics {
         });
 
         appendDefaultData(charts);
+        System.out.println(charts);
+        printInfo(charts.toString());
 
         data.addProperty("server_id", config.serverId().toString());
         data.add("data", charts);
+
+        System.out.println(data);
+        printInfo(data.toString());
+
         return data;
     }
 

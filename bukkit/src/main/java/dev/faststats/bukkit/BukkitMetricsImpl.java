@@ -54,16 +54,32 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     @Override
     @SuppressWarnings("deprecation")
     protected void appendDefaultData(JsonObject charts) {
+        System.out.println("#appendDefaultData pluginVersion:");
+        printInfo("#appendDefaultData pluginVersion:");
+
         var pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
                 .orElseGet(() -> plugin.getDescription().getVersion());
+
+        System.out.println(pluginVersion);
+        printInfo(pluginVersion);
+        
+        System.out.println("#appendDefaultData minecraftVersion:");
+        printInfo("#appendDefaultData minecraftVersion:");
+
         var minecraftVersion = tryOrEmpty(server::getMinecraftVersion)
                 .orElseGet(() -> server.getBukkitVersion().split("-", 2)[0]);
+
+        System.out.println(minecraftVersion);
+        printInfo(minecraftVersion);
 
         charts.addProperty("minecraft_version", minecraftVersion);
         charts.addProperty("online_mode", checkOnlineMode());
         charts.addProperty("player_count", server.getOnlinePlayers().size());
         charts.addProperty("plugin_version", pluginVersion);
         charts.addProperty("server_type", server.getName());
+
+        System.out.println("#appendDefaultData done");
+        printInfo("#appendDefaultData done");
     }
 
     @Override
