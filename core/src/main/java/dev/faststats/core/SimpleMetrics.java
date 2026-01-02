@@ -131,7 +131,7 @@ public abstract class SimpleMetrics implements Metrics {
         info("Starting metrics submission");
         executor.scheduleAtFixedRate(() -> {
             try {
-                submitData();
+                submitAsync();
             } catch (Exception e) {
                 error("Failed to submit metrics", e);
             }
