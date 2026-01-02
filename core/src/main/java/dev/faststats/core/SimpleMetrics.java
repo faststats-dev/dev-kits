@@ -128,7 +128,13 @@ public abstract class SimpleMetrics implements Metrics {
         });
 
         info("Starting metrics submission");
-        executor.scheduleAtFixedRate(this::submitData, initialDelay, period, unit);
+        executor.scheduleAtFixedRate(() -> {
+            try {
+                submitData();
+            } catch (Exception e) {
+                error("Failed to submit metrics", e);
+            }
+        }, initialDelay, period, unit);
     }
 
     protected boolean isSubmitting() {
