@@ -52,53 +52,20 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "Convert2MethodRef"})
     protected void appendDefaultData(JsonObject charts) {
-        System.out.println("#appendDefaultData pluginVersion:");
-        printInfo("#appendDefaultData pluginVersion:");
-
         var pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
                 .orElseGet(() -> plugin.getDescription().getVersion());
 
-        System.out.println(pluginVersion);
-        printInfo(pluginVersion);
-
-        System.out.println("#appendDefaultData minecraftVersion:");
-        printInfo("#appendDefaultData minecraftVersion:");
-
-
-        System.out.println(server.getBukkitVersion());
-        System.out.println(server.getVersion());
-        printInfo(server.getBukkitVersion());
-        printInfo(server.getVersion());
-
-        var minecraftVersion = tryOrEmpty(server::getMinecraftVersion)
-                .orElseGet(() -> {
-                    try {
-                        System.out.println(server.getBukkitVersion());
-                        printInfo(server.getBukkitVersion());
-                        return server.getBukkitVersion().split("-", 2)[0];
-                    } catch (Exception e) {
-                        System.err.println("Failed to get Minecraft version");
-                        e.printStackTrace(System.err);
-                        printError("Failed to get Minecraft version", e);
-                        return server.getVersion();
-                    }
-                });
-        //.or(() -> tryOrEmpty(() -> server.getBukkitVersion().split("-", 2)[0]))
-        //.orElseGet(() -> server.getVersion());
-
-        System.out.println(minecraftVersion);
-        printInfo(minecraftVersion);
+        var minecraftVersion = tryOrEmpty(() -> server.getMinecraftVersion())
+                .or(() -> tryOrEmpty(() -> server.getBukkitVersion().split("-", 2)[0]))
+                .orElseGet(() -> server.getVersion().split("\\(MC: |\\)", 3)[1]);
 
         charts.addProperty("minecraft_version", minecraftVersion);
         charts.addProperty("online_mode", checkOnlineMode());
         charts.addProperty("player_count", server.getOnlinePlayers().size());
         charts.addProperty("plugin_version", pluginVersion);
         charts.addProperty("server_type", server.getName());
-
-        System.out.println("#appendDefaultData done");
-        printInfo("#appendDefaultData done");
     }
 
     @Override
@@ -119,10 +86,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     private <T> Optional<T> tryOrEmpty(Supplier<T> supplier) {
         try {
             return Optional.of(supplier.get());
-        } catch (Throwable e) {
-            printError("Failed to get value", e);
-            System.err.println("Failed to get value");
-            e.printStackTrace(System.err);
+        } catch (NoSuchMethodError | Exception e) {
             return Optional.empty();
         }
     }

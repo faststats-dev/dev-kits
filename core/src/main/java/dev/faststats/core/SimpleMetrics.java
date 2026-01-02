@@ -133,9 +133,6 @@ public abstract class SimpleMetrics implements Metrics {
             try {
                 submitAsync();
             } catch (Throwable t) {
-                System.err.println("Failed to submit metrics");
-                t.printStackTrace(System.err);
-                printError("Failed to submit metrics", t);
                 error("Failed to submit metrics", t);
             }
         }, initialDelay, period, unit);
@@ -203,8 +200,6 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected JsonObject createData() {
-        System.out.println("#createData");
-        printInfo("#createData");
         var data = new JsonObject();
         var charts = new JsonObject();
 
@@ -214,27 +209,18 @@ public abstract class SimpleMetrics implements Metrics {
         charts.addProperty("os_version", System.getProperty("os.version"));
         charts.addProperty("core_count", Runtime.getRuntime().availableProcessors());
 
-        System.out.println(charts);
-        printInfo(charts.toString());
-
         this.charts.forEach(chart -> {
             try {
                 chart.getData().ifPresent(chartData -> charts.add(chart.getId(), chartData));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 error("Failed to build chart data: " + chart.getId(), e);
             }
         });
 
         appendDefaultData(charts);
-        System.out.println(charts);
-        printInfo(charts.toString());
 
         data.addProperty("server_id", config.serverId().toString());
         data.add("data", charts);
-
-        System.out.println(data);
-        printInfo(data.toString());
-
         return data;
     }
 
