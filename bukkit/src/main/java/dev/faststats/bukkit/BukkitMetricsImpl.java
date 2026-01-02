@@ -62,12 +62,31 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
         System.out.println(pluginVersion);
         printInfo(pluginVersion);
-        
+
         System.out.println("#appendDefaultData minecraftVersion:");
         printInfo("#appendDefaultData minecraftVersion:");
 
+
+        System.out.println(server.getBukkitVersion());
+        System.out.println(server.getVersion());
+        printInfo(server.getBukkitVersion());
+        printInfo(server.getVersion());
+
         var minecraftVersion = tryOrEmpty(server::getMinecraftVersion)
-                .orElseGet(() -> server.getBukkitVersion().split("-", 2)[0]);
+                .orElseGet(() -> {
+                    try {
+                        System.out.println(server.getBukkitVersion());
+                        printInfo(server.getBukkitVersion());
+                        return server.getBukkitVersion().split("-", 2)[0];
+                    } catch (Exception e) {
+                        System.err.println("Failed to get Minecraft version");
+                        e.printStackTrace(System.err);
+                        printError("Failed to get Minecraft version", e);
+                        return server.getVersion();
+                    }
+                });
+        //.or(() -> tryOrEmpty(() -> server.getBukkitVersion().split("-", 2)[0]))
+        //.orElseGet(() -> server.getVersion());
 
         System.out.println(minecraftVersion);
         printInfo(minecraftVersion);
