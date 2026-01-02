@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -93,9 +94,17 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     static final class Factory extends SimpleMetrics.Factory<Plugin> {
         @Override
         public Metrics create(Plugin plugin) throws IllegalStateException {
-            var dataFolder = plugin.getServer().getPluginsFolder().toPath().resolve("faststats");
+            var dataFolder = getPluginsFolder(plugin).resolve("faststats");
             var config = dataFolder.resolve("config.properties");
             return new BukkitMetricsImpl(this, plugin, config);
+        }
+
+        private static Path getPluginsFolder(Plugin plugin) {
+            try {
+                return plugin.getServer().getPluginsFolder().toPath();
+            } catch (NoSuchMethodError e) {
+                return plugin.getDataFolder().getParentFile().toPath();
+            }
         }
     }
 }
