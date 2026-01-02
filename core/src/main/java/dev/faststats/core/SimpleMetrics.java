@@ -133,6 +133,9 @@ public abstract class SimpleMetrics implements Metrics {
             try {
                 submitAsync();
             } catch (Exception e) {
+                System.err.println("Failed to submit metrics");
+                e.printStackTrace(System.err);
+                printError("Failed to submit metrics", e);
                 error("Failed to submit metrics", e);
             }
         }, initialDelay, period, unit);
