@@ -35,7 +35,7 @@ final class NukkitMetricsImpl extends SimpleMetrics implements NukkitMetrics {
     protected void appendDefaultData(JsonObject charts) {
         charts.addProperty("minecraft_version", server.getVersion());
         charts.addProperty("online_mode", server.xboxAuth);
-        charts.addProperty("player_count", server.getOnlinePlayers().size());
+        charts.addProperty("player_count", server.getOnlinePlayersCount());
         charts.addProperty("plugin_version", plugin.getDescription().getVersion());
         charts.addProperty("server_type", server.getName());
     }
