@@ -12,5 +12,6 @@ dependencies {
 }
 
 tasks.shadowJar {
-    relocate("dev.faststats", "com.example.utils") // optionally relocate faststats
+    // optionally relocate faststats
+    // relocate("dev.faststats", "com.example.utils.faststats")
 }
