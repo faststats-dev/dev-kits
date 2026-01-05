@@ -1,5 +1,5 @@
 plugins {
-    id("com.gradleup.shadow") version ("9.3.0")
+    id("com.gradleup.shadow") version ("9.2.2")
 }
 
 repositories {
@@ -13,5 +13,5 @@ dependencies {
 
 tasks.shadowJar {
     // optionally relocate faststats
-    // relocate("dev.faststats", "com.example.utils.faststats")
+    relocate("dev.faststats", "com.example.utils.faststats")
 }
