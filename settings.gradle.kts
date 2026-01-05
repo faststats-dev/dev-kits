@@ -4,6 +4,7 @@ plugins {
 
 rootProject.name = "dev-kits"
 include("bukkit")
+include("bukkit:example-plugin")
 include("bungeecord")
 include("core")
 include("minestom")
