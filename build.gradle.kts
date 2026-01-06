@@ -2,7 +2,7 @@ import xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar
 
 plugins {
     id("java")
-    id("xyz.wagyourtail.jvmdowngrader") version "1.3.4" apply false
+    id("xyz.wagyourtail.jvmdowngrader") version "1.3.5" apply false
 }
 
 val downgradedVersions = mapOf<String, Set<Int>>(
