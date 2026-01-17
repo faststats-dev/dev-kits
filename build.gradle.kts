@@ -3,6 +3,7 @@ import xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar
 plugins {
     id("java")
     id("xyz.wagyourtail.jvmdowngrader") version "1.3.5" apply false
+    id("com.gradleup.shadow") version "9.3.1" apply false
 }
 
 val downgradedVersions = mapOf<String, Set<Int>>(
@@ -19,7 +20,13 @@ val defaultJavaVersion = 21
 subprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
-    apply(plugin = "maven-publish")
+
+    val examplePlugin = project.name.equals("example-plugin")
+    if (examplePlugin) {
+        apply(plugin = "com.gradleup.shadow")
+    } else {
+        apply(plugin = "maven-publish")
+    }
 
     if (downgradedVersions.containsKey(project.name)) {
         apply(plugin = "xyz.wagyourtail.jvmdowngrader")
@@ -126,6 +133,7 @@ subprojects {
     }
 
     afterEvaluate {
+        if (examplePlugin) return@afterEvaluate
         extensions.configure<PublishingExtension> {
             publications.create<MavenPublication>("maven") {
                 artifactId = project.name
