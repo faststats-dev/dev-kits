@@ -4,9 +4,6 @@ on:
     types: [ prereleased, released ]
 jobs:
   build:
-    env:
-      REPOSITORY_USER: ${{ secrets.REPOSITORY_USER }}
-      REPOSITORY_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -18,5 +15,21 @@ jobs:
           java-version: 21
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
+      - name: Cache Hytale Server
+        uses: actions/cache@v4
+        with:
+          path: |
+            hytale/libs/HytaleServer.jar
+            hytale/build/download/hytale-downloader-linux-amd64
+          key: ${{ runner.os }}-hytale-download
+          restore-keys: |
+            ${{ runner.os }}-hytale-
+      - name: Download Hytale Server
+        env:
+          HYTALE_DOWNLOADER_CREDENTIALS: ${{ secrets.HYTALE_DOWNLOADER_CREDENTIALS }}
+        run: ./gradlew :hytale:download-server
       - name: Publish with Gradle to Repository
+        env: 
+          REPOSITORY_USER: ${{ secrets.REPOSITORY_USER }}
+          REPOSITORY_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
         run: ./gradlew publish
