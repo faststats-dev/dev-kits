@@ -1,0 +1,16 @@
+{
+  "group": "com.example",
+  "name": "Example Plugin",
+  "version": "1.0.0",
+  "description": "An example plugin for Hytale",
+  "authors": [
+    {
+      "name": "Your Name",
+      "email": "yourname@example.com",
+      "url": "https://yourname.example.com"
+    }
+  ],
+  "website": "https://example.com/example-plugin",
+  "serverVersion": "*",
+  "main": "com.example.ExamplePlugin"
+}
