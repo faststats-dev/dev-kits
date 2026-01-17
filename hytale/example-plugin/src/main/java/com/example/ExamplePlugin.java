@@ -1,10 +1,10 @@
 package com.example;
 
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import dev.faststats.hytale.HytaleMetrics;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.chart.Chart;
-import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import dev.faststats.hytale.HytaleMetrics;
 
 import java.net.URI;
 

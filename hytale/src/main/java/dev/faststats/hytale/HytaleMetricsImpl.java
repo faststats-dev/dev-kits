@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.logging.Level;
 
 final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
     private final HytaleLogger logger;
@@ -51,7 +50,8 @@ final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
     static final class Factory extends SimpleMetrics.Factory<JavaPlugin> {
         @Override
         public Metrics create(JavaPlugin plugin) throws IllegalStateException {
-            var config = plugin.getDataDirectory().resolve("faststats").resolve("config.properties");
+            var mods = plugin.getDataDirectory().toAbsolutePath().getParent();
+            var config = mods.resolve("faststats").resolve("config.properties");
             return new HytaleMetricsImpl(this, plugin.getLogger(), config);
         }
     }
