@@ -217,12 +217,18 @@ public abstract class SimpleMetrics implements Metrics {
         this.charts.forEach(chart -> {
             try {
                 chart.getData().ifPresent(chartData -> charts.add(chart.getId(), chartData));
-            } catch (Throwable e) {
-                error("Failed to build chart data: " + chart.getId(), e);
+            } catch (Throwable t) {
+                error("Failed to build chart data: " + chart.getId(), t);
+                getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
             }
         });
 
-        appendDefaultData(charts);
+        try {
+            appendDefaultData(charts);
+        } catch (Throwable t) {
+            error("Failed to append default data", t);
+            getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
+        }
 
         data.addProperty("identifier", config.serverId().toString());
         data.add("data", charts);
