@@ -3,7 +3,7 @@ package com.example;
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.chart.Chart;
-import dev.faststats.errors.ErrorTracker;
+import dev.faststats.core.ErrorTracker;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.URI;

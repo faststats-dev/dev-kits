@@ -1,27 +1,25 @@
-package dev.faststats.errors.impl;
+package dev.faststats.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import dev.faststats.errors.ErrorTracker;
-import dev.faststats.errors.concurrent.TrackingExecutors;
-import dev.faststats.errors.concurrent.TrackingThreadFactory;
-import dev.faststats.errors.concurrent.TrackingThreadPoolExecutor;
+import dev.faststats.core.concurrent.TrackingBase;
+import dev.faststats.core.concurrent.TrackingExecutors;
+import dev.faststats.core.concurrent.TrackingThreadFactory;
+import dev.faststats.core.concurrent.TrackingThreadPoolExecutor;
 import org.jspecify.annotations.Nullable;
 
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class SimpleErrorTracker implements ErrorTracker {
+final class SimpleErrorTracker implements ErrorTracker {
     private final int stackTraceLimit = Integer.getInteger("faststats.stack-trace-limit", 15);
     private final Map<String, Integer> collected = new ConcurrentHashMap<>();
     private final Map<String, JsonObject> reports = new ConcurrentHashMap<>();
 
+    private final TrackingBase base = new SimpleTrackingBase(this);
     private final TrackingExecutors executors = new SimpleTrackingExecutors(this);
     private final TrackingThreadFactory threadFactory = new SimpleTrackingThreadFactory(this);
     private final TrackingThreadPoolExecutor threadPoolExecutor = new SimpleTrackingThreadPoolExecutor(this);
@@ -86,20 +84,20 @@ public final class SimpleErrorTracker implements ErrorTracker {
             "\\b(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\b";
     private static final String IPV6_PATTERN =
             "(?i)\\b([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}\\b|" +                          // Full form
-            "(?i)\\b([0-9a-f]{1,4}:){1,7}:\\b|" +                                     // Trailing ::
-            "(?i)\\b([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}\\b|" +                        // :: in middle (1 group after)
-            "(?i)\\b([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}\\b|" +                 // :: in middle (2 groups after)
-            "(?i)\\b([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}\\b|" +                 // :: in middle (3 groups after)
-            "(?i)\\b([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\\b|" +                 // :: in middle (4 groups after)
-            "(?i)\\b([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\\b|" +                 // :: in middle (5 groups after)
-            "(?i)\\b[0-9a-f]{1,4}:(:[0-9a-f]{1,4}){1,6}\\b|" +                        // :: in middle (6 groups after)
-            "(?i)\\b:(:[0-9a-f]{1,4}){1,7}\\b|" +                                     // Leading ::
-            "(?i)\\b::([0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4}\\b|" +                       // :: at start
-            "(?i)\\b::\\b";                                                           // Just ::
+                    "(?i)\\b([0-9a-f]{1,4}:){1,7}:\\b|" +                                     // Trailing ::
+                    "(?i)\\b([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}\\b|" +                        // :: in middle (1 group after)
+                    "(?i)\\b([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}\\b|" +                 // :: in middle (2 groups after)
+                    "(?i)\\b([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}\\b|" +                 // :: in middle (3 groups after)
+                    "(?i)\\b([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\\b|" +                 // :: in middle (4 groups after)
+                    "(?i)\\b([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\\b|" +                 // :: in middle (5 groups after)
+                    "(?i)\\b[0-9a-f]{1,4}:(:[0-9a-f]{1,4}){1,6}\\b|" +                        // :: in middle (6 groups after)
+                    "(?i)\\b:(:[0-9a-f]{1,4}){1,7}\\b|" +                                     // Leading ::
+                    "(?i)\\b::([0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4}\\b|" +                       // :: at start
+                    "(?i)\\b::\\b";                                                           // Just ::
     private static final String USER_HOME_PATH_PATTERN =
             "(/home/)[^/\\s]+" +                                                      // Linux: /home/username
-            "|(/Users/)[^/\\s]+" +                                                    // macOS: /Users/username
-            "|((?i)[A-Z]:\\\\Users\\\\)[^\\\\\\s]+";                                  // Windows: A-Z:\\Users\\username
+                    "|(/Users/)[^/\\s]+" +                                                    // macOS: /Users/username
+                    "|((?i)[A-Z]:\\\\Users\\\\)[^\\\\\\s]+";                                  // Windows: A-Z:\\Users\\username
 
     private String anonymize(String message) {
         message = message.replaceAll(IPV4_PATTERN, "[IP hidden]");
@@ -110,8 +108,7 @@ public final class SimpleErrorTracker implements ErrorTracker {
         return message;
     }
 
-    @Override
-    public Optional<JsonArray> getData() {
+    public JsonArray getData() {
         var report = new JsonArray(reports.size());
 
         reports.forEach((hash, object) -> {
@@ -132,10 +129,9 @@ public final class SimpleErrorTracker implements ErrorTracker {
             report.add(entry);
         });
 
-        return Optional.of(report);
+        return report;
     }
 
-    @Override
     public void clear() {
         collected.replaceAll((k, v) -> 0);
         reports.clear();
@@ -152,66 +148,8 @@ public final class SimpleErrorTracker implements ErrorTracker {
     }
 
     @Override
-    public boolean isSameLoader(ClassLoader loader, Throwable error) {
-        StackTraceElement[] stackTrace = error.getStackTrace();
-        if (stackTrace == null || stackTrace.length == 0) {
-            return false;
-        }
-
-        int firstNonLibraryIndex = findFirstNonLibraryFrameIndex(stackTrace);
-        if (firstNonLibraryIndex == -1) {
-            return false;
-        }
-
-        int framesToCheck = Math.min(5, stackTrace.length - firstNonLibraryIndex);
-
-        for (int i = 0; i < framesToCheck; i++) {
-            StackTraceElement frame = stackTrace[firstNonLibraryIndex + i];
-            if (isLibraryClass(frame.getClassName())) {
-                continue;
-            }
-            if (!isFromLoader(frame, loader)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public Runnable tracked(Runnable runnable) {
-        return () -> {
-            try {
-                runnable.run();
-            } catch (Throwable error) {
-                trackError(error);
-                throw error;
-            }
-        };
-    }
-
-    @Override
-    public <T> PrivilegedAction<T> tracked(PrivilegedAction<T> action) {
-        return () -> {
-            try {
-                return action.run();
-            } catch (Throwable error) {
-                trackError(error);
-                throw error;
-            }
-        };
-    }
-
-    @Override
-    public <T> PrivilegedExceptionAction<T> tracked(PrivilegedExceptionAction<T> action) {
-        return () -> {
-            try {
-                return action.run();
-            } catch (Throwable error) {
-                trackError(error);
-                throw error;
-            }
-        };
+    public TrackingBase base() {
+        return base;
     }
 
     @Override
@@ -229,8 +167,34 @@ public final class SimpleErrorTracker implements ErrorTracker {
         return threadPoolExecutor;
     }
 
-    private int findFirstNonLibraryFrameIndex(StackTraceElement[] stackTrace) {
-        for (int i = 0; i < stackTrace.length; i++) {
+    private boolean isSameLoader(final ClassLoader loader, final Throwable error) {
+        var stackTrace = error.getStackTrace();
+        if (stackTrace == null || stackTrace.length == 0) {
+            return false;
+        }
+
+        var firstNonLibraryIndex = findFirstNonLibraryFrameIndex(stackTrace);
+        if (firstNonLibraryIndex == -1) {
+            return false;
+        }
+
+        var framesToCheck = Math.min(5, stackTrace.length - firstNonLibraryIndex);
+
+        for (var i = 0; i < framesToCheck; i++) {
+            var frame = stackTrace[firstNonLibraryIndex + i];
+            if (isLibraryClass(frame.getClassName())) {
+                continue;
+            }
+            if (!isFromLoader(frame, loader)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private int findFirstNonLibraryFrameIndex(final StackTraceElement[] stackTrace) {
+        for (var i = 0; i < stackTrace.length; i++) {
             if (!isLibraryClass(stackTrace[i].getClassName())) {
                 return i;
             }
@@ -238,7 +202,7 @@ public final class SimpleErrorTracker implements ErrorTracker {
         return -1;
     }
 
-    private boolean isLibraryClass(String className) {
+    private boolean isLibraryClass(final String className) {
         return className.startsWith("java.")
                 || className.startsWith("javax.")
                 || className.startsWith("sun.")
@@ -246,7 +210,7 @@ public final class SimpleErrorTracker implements ErrorTracker {
                 || className.startsWith("jdk.");
     }
 
-    private boolean isFromLoader(StackTraceElement frame, ClassLoader loader) {
+    private boolean isFromLoader(final StackTraceElement frame, final ClassLoader loader) {
         try {
             var clazz = Class.forName(frame.getClassName(), false, loader);
             return isSameClassLoader(clazz.getClassLoader(), loader);
@@ -255,18 +219,13 @@ public final class SimpleErrorTracker implements ErrorTracker {
         }
     }
 
-    private boolean isSameClassLoader(ClassLoader classLoader, ClassLoader loader) {
-        if (classLoader == loader) {
-            return true;
-        }
-        // Walk up the class loader hierarchy
-        ClassLoader current = classLoader;
-        while (current != null) {
-            if (current == loader) {
-                return true;
-            }
+    private boolean isSameClassLoader(final ClassLoader classLoader, final ClassLoader loader) {
+        if (classLoader == loader) return true;
+
+        var current = classLoader;
+        while (current != null && current != loader) {
             current = current.getParent();
         }
-        return false;
+        return loader == current;
     }
 }

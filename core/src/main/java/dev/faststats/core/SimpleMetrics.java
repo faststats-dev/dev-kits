@@ -2,7 +2,6 @@ package dev.faststats.core;
 
 import com.google.gson.JsonObject;
 import dev.faststats.core.chart.Chart;
-import dev.faststats.errors.ErrorTracker;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -60,7 +59,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
-    protected SimpleMetrics(SimpleMetrics.Factory<?> factory, Path config) throws IllegalStateException {
+    protected SimpleMetrics(Factory<?> factory, Path config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
         this.charts = Set.copyOf(factory.charts);
@@ -188,7 +187,7 @@ public abstract class SimpleMetrics implements Metrics {
 
                 if (statusCode >= 200 && statusCode < 300) {
                     info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
-                    getErrorTracker().ifPresent(ErrorTracker::clear);
+                    getErrorTracker().map(SimpleErrorTracker.class::cast).ifPresent(SimpleErrorTracker::clear);
                     return true;
                 } else if (statusCode >= 300 && statusCode < 400) {
                     warn("Received redirect response from metrics server: " + statusCode + " (" + body + ")");
@@ -243,7 +242,9 @@ public abstract class SimpleMetrics implements Metrics {
         data.addProperty("identifier", config.serverId().toString());
         data.add("data", charts);
 
-        getErrorTracker().flatMap(ErrorTracker::getData).ifPresent(errors -> data.add("errors", errors));
+        getErrorTracker().map(SimpleErrorTracker.class::cast)
+                .map(SimpleErrorTracker::getData)
+                .ifPresent(errors -> data.add("errors", errors));
         return data;
     }
 

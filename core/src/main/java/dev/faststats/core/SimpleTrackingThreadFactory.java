@@ -1,11 +1,10 @@
-package dev.faststats.errors.impl;
+package dev.faststats.core;
 
-import dev.faststats.errors.ErrorTracker;
-import dev.faststats.errors.concurrent.TrackingThreadFactory;
+import dev.faststats.core.concurrent.TrackingThreadFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class SimpleTrackingThreadFactory implements TrackingThreadFactory {
+final class SimpleTrackingThreadFactory implements TrackingThreadFactory {
     private static final AtomicInteger poolNumber = new AtomicInteger(1);
     private final ThreadGroup group;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -25,7 +24,7 @@ public final class SimpleTrackingThreadFactory implements TrackingThreadFactory 
 
     @Override
     public Thread newThread(String name, Runnable runnable) {
-        var thread = new Thread(this.group, tracker.tracked(runnable), name, 0L);
+        var thread = new Thread(this.group, tracker.base().tracked(runnable), name, 0L);
         if (thread.isDaemon()) thread.setDaemon(false);
         if (thread.getPriority() != 5) thread.setPriority(5);
         return thread;

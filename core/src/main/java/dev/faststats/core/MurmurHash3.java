@@ -1,4 +1,4 @@
-package dev.faststats.errors.impl;
+package dev.faststats.core;
 
 import org.jetbrains.annotations.Contract;
 

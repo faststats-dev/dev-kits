@@ -1,7 +1,6 @@
 package dev.faststats.core;
 
 import dev.faststats.core.chart.Chart;
-import dev.faststats.errors.ErrorTracker;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 

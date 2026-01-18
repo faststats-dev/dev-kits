@@ -1,6 +1,6 @@
-package dev.faststats.errors.concurrent;
+package dev.faststats.core.concurrent;
 
-import dev.faststats.errors.impl.SimpleTrackingThreadFactory;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NonNls;
 
@@ -8,11 +8,12 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Creates threads that are tracked by the error tracker.
- * 
+ *
  * @see java.util.concurrent.ThreadFactory
  * @since 0.10.0
  */
-public sealed interface TrackingThreadFactory extends ThreadFactory permits SimpleTrackingThreadFactory {
+@ApiStatus.NonExtendable
+public interface TrackingThreadFactory extends ThreadFactory {
     /**
      * Creates a new thread for the given runnable.
      * <p>

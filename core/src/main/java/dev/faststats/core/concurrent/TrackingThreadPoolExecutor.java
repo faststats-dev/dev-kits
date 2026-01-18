@@ -1,6 +1,6 @@
-package dev.faststats.errors.concurrent;
+package dev.faststats.core.concurrent;
 
-import dev.faststats.errors.impl.SimpleTrackingThreadPoolExecutor;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Range;
 
 import java.util.concurrent.BlockingQueue;
@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit;
  * @see java.util.concurrent.ThreadPoolExecutor
  * @since 0.10.0
  */
-public sealed interface TrackingThreadPoolExecutor permits SimpleTrackingThreadPoolExecutor {
+@ApiStatus.NonExtendable
+public interface TrackingThreadPoolExecutor {
     /**
      * Creates a new thread pool executor.
      * <p>

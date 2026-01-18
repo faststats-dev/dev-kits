@@ -1,11 +1,10 @@
-package dev.faststats.errors.impl;
+package dev.faststats.core;
 
-import dev.faststats.errors.ErrorTracker;
-import dev.faststats.errors.concurrent.TrackingThreadFactory;
+import dev.faststats.core.concurrent.TrackingThreadFactory;
 
 import java.util.concurrent.ThreadFactory;
 
-public final class WrappedTrackingThreadFactory implements ThreadFactory {
+final class WrappedTrackingThreadFactory implements ThreadFactory {
     private final ErrorTracker tracker;
     private final ThreadFactory factory;
 
@@ -16,7 +15,7 @@ public final class WrappedTrackingThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable runnable) {
-        return factory.newThread(tracker.tracked(runnable));
+        return factory.newThread(tracker.base().tracked(runnable));
     }
 
     public static ThreadFactory wrap(ErrorTracker tracker, ThreadFactory factory) {

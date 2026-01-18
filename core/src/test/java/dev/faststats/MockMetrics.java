@@ -3,7 +3,7 @@ package dev.faststats;
 import com.google.gson.JsonObject;
 import dev.faststats.core.SimpleMetrics;
 import dev.faststats.core.Token;
-import dev.faststats.errors.ErrorTracker;
+import dev.faststats.core.ErrorTracker;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 

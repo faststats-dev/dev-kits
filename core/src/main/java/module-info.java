@@ -3,10 +3,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 module dev.faststats.core {
     exports dev.faststats.core.chart;
+    exports dev.faststats.core.concurrent;
     exports dev.faststats.core;
 
     requires com.google.gson;
-    requires dev.faststats.errors;
     requires java.net.http;
 
     requires static org.jetbrains.annotations;

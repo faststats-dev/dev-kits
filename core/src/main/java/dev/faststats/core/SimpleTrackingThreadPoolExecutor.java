@@ -1,7 +1,6 @@
-package dev.faststats.errors.impl;
+package dev.faststats.core;
 
-import dev.faststats.errors.ErrorTracker;
-import dev.faststats.errors.concurrent.TrackingThreadPoolExecutor;
+import dev.faststats.core.concurrent.TrackingThreadPoolExecutor;
 import org.jetbrains.annotations.Range;
 
 import java.util.concurrent.BlockingQueue;
@@ -10,7 +9,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public final class SimpleTrackingThreadPoolExecutor implements TrackingThreadPoolExecutor {
+final class SimpleTrackingThreadPoolExecutor implements TrackingThreadPoolExecutor {
     private final ErrorTracker tracker;
 
     public SimpleTrackingThreadPoolExecutor(ErrorTracker tracker) {

@@ -1,7 +1,6 @@
-package dev.faststats.errors.impl;
+package dev.faststats.core;
 
-import dev.faststats.errors.ErrorTracker;
-import dev.faststats.errors.concurrent.TrackingExecutors;
+import dev.faststats.core.concurrent.TrackingExecutors;
 
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -14,7 +13,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-public final class SimpleTrackingExecutors implements TrackingExecutors {
+final class SimpleTrackingExecutors implements TrackingExecutors {
     private final ErrorTracker tracker;
 
     public SimpleTrackingExecutors(ErrorTracker tracker) {
@@ -108,21 +107,21 @@ public final class SimpleTrackingExecutors implements TrackingExecutors {
 
     @Override
     public <T> Callable<T> callable(Runnable task, T result) {
-        return Executors.callable(tracker.tracked(task), result);
+        return Executors.callable(tracker.base().tracked(task), result);
     }
 
     @Override
     public Callable<Object> callable(Runnable task) {
-        return Executors.callable(tracker.tracked(task));
+        return Executors.callable(tracker.base().tracked(task));
     }
 
     @Override
     public Callable<Object> callable(PrivilegedAction<?> action) {
-        return Executors.callable(tracker.tracked(action));
+        return Executors.callable(tracker.base().tracked(action));
     }
 
     @Override
     public Callable<Object> callable(PrivilegedExceptionAction<?> action) {
-        return Executors.callable(tracker.tracked(action));
+        return Executors.callable(tracker.base().tracked(action));
     }
 }

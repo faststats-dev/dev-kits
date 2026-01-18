@@ -1,23 +1,17 @@
-package dev.faststats.errors;
+package dev.faststats.core;
 
-import com.google.gson.JsonArray;
-import dev.faststats.errors.concurrent.TrackingExecutors;
-import dev.faststats.errors.concurrent.TrackingThreadFactory;
-import dev.faststats.errors.concurrent.TrackingThreadPoolExecutor;
-import dev.faststats.errors.impl.SimpleErrorTracker;
+import dev.faststats.core.concurrent.TrackingExecutors;
+import dev.faststats.core.concurrent.TrackingBase;
+import dev.faststats.core.concurrent.TrackingThreadFactory;
+import dev.faststats.core.concurrent.TrackingThreadPoolExecutor;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
-
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
-import java.util.Optional;
 
 /**
  * An error tracker.
  *
  * @since 0.10.0
  */
-// todo: cleanup
 public sealed interface ErrorTracker permits SimpleErrorTracker {
     /**
      * Create and attach a new context-aware error tracker.
@@ -77,23 +71,6 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
     void trackError(Throwable error);
 
     /**
-     * Gets the error data.
-     *
-     * @return the error data
-     * @since 0.10.0
-     */
-    @Contract(pure = true)
-    Optional<JsonArray> getData(); // todo: keep public?
-
-    /**
-     * Clears the error data.
-     *
-     * @since 0.10.0
-     */
-    @Contract(mutates = "this")
-    void clear(); // todo: keep public?
-
-    /**
      * Attaches an error context to the tracker.
      *
      * @param loader the class loader
@@ -102,45 +79,13 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
     void attachErrorContext(@Nullable ClassLoader loader);
 
     /**
-     * Checks if the given error is from the given class loader.
+     * Returns the tracking base.
      *
-     * @param loader the class loader
-     * @param error  the error
-     * @return {@code true} if the error is from the given class loader.
+     * @return the tracking base
      * @since 0.10.0
      */
     @Contract(pure = true)
-    boolean isSameLoader(ClassLoader loader, Throwable error); // todo: keep public?
-
-    /**
-     * Creates a tracked runnable.
-     *
-     * @param runnable the runnable
-     * @return the tracked runnable
-     * @since 0.10.0
-     */
-    @Contract(value = "_ -> new", pure = true)
-    Runnable tracked(Runnable runnable); // todo: move to extra interface?
-
-    /**
-     * Creates a tracked action.
-     *
-     * @param action the action
-     * @return the tracked action
-     * @since 0.10.0
-     */
-    @Contract(value = "_ -> new", pure = true)
-    <T> PrivilegedAction<T> tracked(PrivilegedAction<T> action); // todo: move to extra interface?
-
-    /**
-     * Creates a tracked exception action.
-     *
-     * @param action the exception action
-     * @return the tracked exception action
-     * @since 0.10.0
-     */
-    @Contract(value = "_ -> new", pure = true)
-    <T> PrivilegedExceptionAction<T> tracked(PrivilegedExceptionAction<T> action); // todo: move to extra interface?
+    TrackingBase base();
 
     /**
      * Returns the tracking equivalent to {@link java.util.concurrent.Executors}.

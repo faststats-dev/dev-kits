@@ -1,6 +1,6 @@
-package dev.faststats.errors.concurrent;
+package dev.faststats.core.concurrent;
 
-import dev.faststats.errors.impl.SimpleTrackingExecutors;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -13,7 +13,8 @@ import java.util.concurrent.ThreadFactory;
  * @see java.util.concurrent.Executors
  * @since 0.10.0
  */
-public sealed interface TrackingExecutors permits SimpleTrackingExecutors {
+@ApiStatus.NonExtendable
+public interface TrackingExecutors {
     /**
      * @see java.util.concurrent.Executors#newFixedThreadPool(int)
      * @since 0.10.0
