@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 final class SimpleErrorTracker implements ErrorTracker {
-    private final int stackTraceLimit = Integer.getInteger("faststats.stack-trace-limit", 15);
+    private final int stackTraceLimit = Math.min(50, Integer.getInteger("faststats.stack-trace-limit", 15));
     private final Map<String, Integer> collected = new ConcurrentHashMap<>();
     private final Map<String, JsonObject> reports = new ConcurrentHashMap<>();
 
