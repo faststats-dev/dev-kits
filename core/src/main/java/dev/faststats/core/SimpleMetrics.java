@@ -17,7 +17,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -32,6 +31,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class SimpleMetrics implements Metrics {
     protected static final String ONBOARDING_MESSAGE = """
@@ -52,23 +53,34 @@ public abstract class SimpleMetrics implements Metrics {
     private final Set<Chart<?>> charts;
     private final Config config;
     private final @Token String token;
+    private final @Nullable ErrorTracker tracker;
     private final URI url;
     private final boolean debug;
 
     @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
-    protected SimpleMetrics(SimpleMetrics.Factory<?> factory, Path config) throws IllegalStateException {
+    protected SimpleMetrics(Factory<?> factory, Path config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
         this.charts = Set.copyOf(factory.charts);
         this.config = new Config(config);
         this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || this.config.debug();
         this.token = factory.token;
+        this.tracker = factory.tracker;
         this.url = factory.url;
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                shutdown();
+                submitAsync().join();
+            } catch (Exception e) {
+                error("Failed to submit metrics on shutdown", e);
+            }
+        }, "metrics-shutdown-thread " + getClass().getName()));
     }
 
     @VisibleForTesting
-    protected SimpleMetrics(Config config, Set<Chart<?>> charts, @Token String token, URI url, boolean debug) {
+    protected SimpleMetrics(Config config, Set<Chart<?>> charts, @Token String token, @Nullable ErrorTracker tracker, URI url, boolean debug) {
         if (!token.matches(Token.PATTERN)) {
             throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
         }
@@ -77,6 +89,7 @@ public abstract class SimpleMetrics implements Metrics {
         this.config = config;
         this.debug = debug;
         this.token = token;
+        this.tracker = tracker;
         this.url = url;
     }
 
@@ -144,7 +157,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     protected CompletableFuture<Boolean> submitAsync() throws IOException {
         var data = createData().toString();
-        var bytes = data.getBytes(StandardCharsets.UTF_8);
+        var bytes = data.getBytes(UTF_8);
 
         info("Uncompressed data: " + data);
 
@@ -168,12 +181,13 @@ public abstract class SimpleMetrics implements Metrics {
                     .build();
 
             info("Sending metrics to: " + url);
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).thenApply(response -> {
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(UTF_8)).thenApply(response -> {
                 var statusCode = response.statusCode();
                 var body = response.body();
 
                 if (statusCode >= 200 && statusCode < 300) {
                     info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
+                    getErrorTracker().map(SimpleErrorTracker.class::cast).ifPresent(SimpleErrorTracker::clear);
                     return true;
                 } else if (statusCode >= 300 && statusCode < 400) {
                     warn("Received redirect response from metrics server: " + statusCode + " (" + body + ")");
@@ -212,21 +226,36 @@ public abstract class SimpleMetrics implements Metrics {
         this.charts.forEach(chart -> {
             try {
                 chart.getData().ifPresent(chartData -> charts.add(chart.getId(), chartData));
-            } catch (Throwable e) {
-                error("Failed to build chart data: " + chart.getId(), e);
+            } catch (Throwable t) {
+                error("Failed to build chart data: " + chart.getId(), t);
+                getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
             }
         });
 
-        appendDefaultData(charts);
+        try {
+            appendDefaultData(charts);
+        } catch (Throwable t) {
+            error("Failed to append default data", t);
+            getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
+        }
 
-        data.addProperty("server_id", config.serverId().toString());
+        data.addProperty("identifier", config.serverId().toString());
         data.add("data", charts);
+
+        getErrorTracker().map(SimpleErrorTracker.class::cast)
+                .map(SimpleErrorTracker::getData)
+                .ifPresent(errors -> data.add("errors", errors));
         return data;
     }
 
     @Override
     public @Token String getToken() {
         return token;
+    }
+
+    @Override
+    public Optional<ErrorTracker> getErrorTracker() {
+        return Optional.ofNullable(tracker);
     }
 
     @Override
@@ -270,12 +299,19 @@ public abstract class SimpleMetrics implements Metrics {
     public abstract static class Factory<T> implements Metrics.Factory<T> {
         private final Set<Chart<?>> charts = new HashSet<>(0);
         private URI url = URI.create("https://metrics.faststats.dev/v1/collect");
+        private @Nullable ErrorTracker tracker;
         private @Nullable String token;
         private boolean debug = false;
 
         @Override
         public Metrics.Factory<T> addChart(Chart<?> chart) throws IllegalArgumentException {
             if (!charts.add(chart)) throw new IllegalArgumentException("Chart already added: " + chart.getId());
+            return this;
+        }
+
+        @Override
+        public Metrics.Factory<T> errorTracker(ErrorTracker tracker) {
+            this.tracker = tracker;
             return this;
         }
 
@@ -360,7 +396,7 @@ public abstract class SimpleMetrics implements Metrics {
 
         private static Optional<Properties> readOrEmpty(Path file) {
             if (!Files.isRegularFile(file)) return Optional.empty();
-            try (var reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+            try (var reader = Files.newBufferedReader(file, UTF_8)) {
                 var properties = new Properties();
                 properties.load(reader);
                 return Optional.of(properties);
@@ -372,7 +408,7 @@ public abstract class SimpleMetrics implements Metrics {
         private static void save(Path file, UUID serverId, boolean enabled, boolean debug) throws IOException {
             Files.createDirectories(file.getParent());
             try (var out = Files.newOutputStream(file);
-                 var writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
+                 var writer = new OutputStreamWriter(out, UTF_8)) {
                 var properties = new Properties();
 
                 properties.setProperty("serverId", serverId.toString());

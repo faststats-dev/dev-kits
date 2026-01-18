@@ -3,6 +3,7 @@ package dev.faststats;
 import com.google.gson.JsonObject;
 import dev.faststats.core.SimpleMetrics;
 import dev.faststats.core.Token;
+import dev.faststats.core.ErrorTracker;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -14,8 +15,8 @@ import java.util.concurrent.CompletableFuture;
 
 @NullMarked
 public class MockMetrics extends SimpleMetrics {
-    public MockMetrics(UUID serverId, @Token String token, boolean debug) {
-        super(new SimpleMetrics.Config(serverId, true, debug), Set.of(), token, URI.create("http://localhost:5000/v1/collect"), debug);
+    public MockMetrics(UUID serverId, @Token String token, @Nullable ErrorTracker tracker, boolean debug) {
+        super(new SimpleMetrics.Config(serverId, true, debug), Set.of(), token, tracker, URI.create("http://localhost:5000/v1/collect"), debug);
     }
 
     @Override

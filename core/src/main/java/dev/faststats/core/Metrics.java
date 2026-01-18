@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,15 @@ public interface Metrics {
     @Token
     @Contract(pure = true)
     String getToken();
+
+    /**
+     * Get the error tracker for this metrics instance.
+     *
+     * @return the error tracker
+     * @since 0.10.0
+     */
+    @Contract(pure = true)
+    Optional<ErrorTracker> getErrorTracker();
 
     /**
      * Get the metrics configuration.
@@ -59,6 +69,16 @@ public interface Metrics {
          */
         @Contract(mutates = "this")
         Factory<T> addChart(Chart<?> chart) throws IllegalArgumentException;
+
+        /**
+         * Sets the error tracker for this metrics instance.
+         *
+         * @param tracker the error tracker
+         * @return the metrics factory
+         * @since 0.10.0
+         */
+        @Contract(mutates = "this")
+        Factory<T> errorTracker(ErrorTracker tracker);
 
         /**
          * Enables or disabled debug mode for this metrics instance.
