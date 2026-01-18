@@ -18,7 +18,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -33,6 +32,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class SimpleMetrics implements Metrics {
     protected static final String ONBOARDING_MESSAGE = """
@@ -148,7 +149,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     protected CompletableFuture<Boolean> submitAsync() throws IOException {
         var data = createData().toString();
-        var bytes = data.getBytes(StandardCharsets.UTF_8);
+        var bytes = data.getBytes(UTF_8);
 
         info("Uncompressed data: " + data);
 
@@ -172,7 +173,7 @@ public abstract class SimpleMetrics implements Metrics {
                     .build();
 
             info("Sending metrics to: " + url);
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).thenApply(response -> {
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(UTF_8)).thenApply(response -> {
                 var statusCode = response.statusCode();
                 var body = response.body();
 
@@ -385,7 +386,7 @@ public abstract class SimpleMetrics implements Metrics {
 
         private static Optional<Properties> readOrEmpty(Path file) {
             if (!Files.isRegularFile(file)) return Optional.empty();
-            try (var reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+            try (var reader = Files.newBufferedReader(file, UTF_8)) {
                 var properties = new Properties();
                 properties.load(reader);
                 return Optional.of(properties);
@@ -397,7 +398,7 @@ public abstract class SimpleMetrics implements Metrics {
         private static void save(Path file, UUID serverId, boolean enabled, boolean debug) throws IOException {
             Files.createDirectories(file.getParent());
             try (var out = Files.newOutputStream(file);
-                 var writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
+                 var writer = new OutputStreamWriter(out, UTF_8)) {
                 var properties = new Properties();
 
                 properties.setProperty("serverId", serverId.toString());
