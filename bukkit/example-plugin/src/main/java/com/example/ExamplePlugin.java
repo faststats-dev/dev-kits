@@ -3,11 +3,18 @@ package com.example;
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.chart.Chart;
+import dev.faststats.errors.ErrorTracker;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.URI;
 
 public class ExamplePlugin extends JavaPlugin {
+    // context-aware error tracker, automatically tracks errors in the same class loader
+    public static final ErrorTracker ERROR_TRACKER = ErrorTracker.contextAware();
+
+    // context-unaware error tracker, does not automatically track errors
+    public static final ErrorTracker CONTEXT_UNAWARE_ERROR_TRACKER = ErrorTracker.contextUnaware();
+
     private final Metrics metrics = BukkitMetrics.factory()
             .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
@@ -20,6 +27,10 @@ public class ExamplePlugin extends JavaPlugin {
             .addChart(Chart.numberArray("example_number_array", () -> new Number[]{1, 2, 3}))
             .addChart(Chart.booleanArray("example_boolean_array", () -> new Boolean[]{true, false}))
 
+            // Attach an error tracker
+            // This must be enabled in the project settings
+            .errorTracker(ERROR_TRACKER)
+
             .debug(true) // Enable debug mode for development and testing
 
             .token("YOUR_TOKEN_HERE") // required -> token can be found in the settings of your project
@@ -28,5 +39,14 @@ public class ExamplePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         metrics.shutdown();
+    }
+    
+    public void doSomethingWrong() {
+        try {
+            // Do something that might throw an error
+            throw new RuntimeException("Something went wrong!");
+        } catch (Exception e) {
+            CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
+        }
     }
 }

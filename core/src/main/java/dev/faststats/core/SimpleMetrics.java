@@ -2,6 +2,7 @@ package dev.faststats.core;
 
 import com.google.gson.JsonObject;
 import dev.faststats.core.chart.Chart;
+import dev.faststats.errors.ErrorTracker;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -52,6 +53,7 @@ public abstract class SimpleMetrics implements Metrics {
     private final Set<Chart<?>> charts;
     private final Config config;
     private final @Token String token;
+    private final @Nullable ErrorTracker tracker;
     private final URI url;
     private final boolean debug;
 
@@ -64,11 +66,12 @@ public abstract class SimpleMetrics implements Metrics {
         this.config = new Config(config);
         this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || this.config.debug();
         this.token = factory.token;
+        this.tracker = factory.tracker;
         this.url = factory.url;
     }
 
     @VisibleForTesting
-    protected SimpleMetrics(Config config, Set<Chart<?>> charts, @Token String token, URI url, boolean debug) {
+    protected SimpleMetrics(Config config, Set<Chart<?>> charts, @Token String token, @Nullable ErrorTracker tracker, URI url, boolean debug) {
         if (!token.matches(Token.PATTERN)) {
             throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
         }
@@ -77,6 +80,7 @@ public abstract class SimpleMetrics implements Metrics {
         this.config = config;
         this.debug = debug;
         this.token = token;
+        this.tracker = tracker;
         this.url = url;
     }
 
@@ -174,6 +178,7 @@ public abstract class SimpleMetrics implements Metrics {
 
                 if (statusCode >= 200 && statusCode < 300) {
                     info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
+                    getErrorTracker().ifPresent(ErrorTracker::clear);
                     return true;
                 } else if (statusCode >= 300 && statusCode < 400) {
                     warn("Received redirect response from metrics server: " + statusCode + " (" + body + ")");
@@ -219,14 +224,21 @@ public abstract class SimpleMetrics implements Metrics {
 
         appendDefaultData(charts);
 
-        data.addProperty("server_id", config.serverId().toString());
+        data.addProperty("identifier", config.serverId().toString());
         data.add("data", charts);
+
+        getErrorTracker().flatMap(ErrorTracker::getData).ifPresent(errors -> data.add("errors", errors));
         return data;
     }
 
     @Override
     public @Token String getToken() {
         return token;
+    }
+
+    @Override
+    public Optional<ErrorTracker> getErrorTracker() {
+        return Optional.ofNullable(tracker);
     }
 
     @Override
@@ -270,12 +282,19 @@ public abstract class SimpleMetrics implements Metrics {
     public abstract static class Factory<T> implements Metrics.Factory<T> {
         private final Set<Chart<?>> charts = new HashSet<>(0);
         private URI url = URI.create("https://metrics.faststats.dev/v1/collect");
+        private @Nullable ErrorTracker tracker;
         private @Nullable String token;
         private boolean debug = false;
 
         @Override
         public Metrics.Factory<T> addChart(Chart<?> chart) throws IllegalArgumentException {
             if (!charts.add(chart)) throw new IllegalArgumentException("Chart already added: " + chart.getId());
+            return this;
+        }
+
+        @Override
+        public Metrics.Factory<T> errorTracker(ErrorTracker tracker) {
+            this.tracker = tracker;
             return this;
         }
 

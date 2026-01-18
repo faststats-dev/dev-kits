@@ -1,5 +1,7 @@
 dependencies {
-    api(project(":error-tracker"))
+    compileOnlyApi("com.google.code.gson:gson:2.13.2")
+    compileOnlyApi("org.jetbrains:annotations:26.0.2-1")
+    compileOnlyApi("org.jspecify:jspecify:1.0.0")
 
     testImplementation("com.google.code.gson:gson:2.13.2")
     testImplementation("org.junit.jupiter:junit-jupiter")
