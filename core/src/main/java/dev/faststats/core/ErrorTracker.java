@@ -1,11 +1,14 @@
 package dev.faststats.core;
 
-import dev.faststats.core.concurrent.TrackingExecutors;
 import dev.faststats.core.concurrent.TrackingBase;
+import dev.faststats.core.concurrent.TrackingExecutors;
 import dev.faststats.core.concurrent.TrackingThreadFactory;
 import dev.faststats.core.concurrent.TrackingThreadPoolExecutor;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * An error tracker.
@@ -72,11 +75,33 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
 
     /**
      * Attaches an error context to the tracker.
+     * <p>
+     * If the class loader is {@code null}, the tracker will track all errors.
      *
      * @param loader the class loader
      * @since 0.10.0
      */
     void attachErrorContext(@Nullable ClassLoader loader);
+
+    /**
+     * Sets the error event handler which will be called when an error is tracked automatically.
+     * <p>
+     * The purpose of this handler is to allow custom error handling like logging.
+     *
+     * @param errorEvent the error event handler
+     * @since 0.11.0
+     */
+    @Contract(mutates = "this")
+    void setContextErrorHandler(@Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent);
+
+    /**
+     * Returns the error event handler which will be called when an error is tracked automatically.
+     *
+     * @return the error event handler
+     * @since 0.11.0
+     */
+    @Contract(pure = true)
+    Optional<BiConsumer<@Nullable ClassLoader, Throwable>> getContextErrorHandler();
 
     /**
      * Returns the tracking base.
