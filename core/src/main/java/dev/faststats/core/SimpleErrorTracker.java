@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 final class SimpleErrorTracker implements ErrorTracker {
     private final int stackTraceLimit = Math.min(50, Integer.getInteger("faststats.stack-trace-limit", 15));
@@ -23,6 +25,8 @@ final class SimpleErrorTracker implements ErrorTracker {
     private final TrackingExecutors executors = new SimpleTrackingExecutors(this);
     private final TrackingThreadFactory threadFactory = new SimpleTrackingThreadFactory(this);
     private final TrackingThreadPoolExecutor threadPoolExecutor = new SimpleTrackingThreadPoolExecutor(this);
+
+    private @Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent = null;
 
     @Override
     public void trackError(String message) {
@@ -143,8 +147,19 @@ final class SimpleErrorTracker implements ErrorTracker {
         Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
             if (handler != null) handler.uncaughtException(thread, error);
             if (loader != null && !isSameLoader(loader, error)) return;
+            if (errorEvent != null) errorEvent.accept(loader, error);
             trackError(error);
         });
+    }
+
+    @Override
+    public void setContextErrorHandler(@Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent) {
+        this.errorEvent = errorEvent;
+    }
+
+    @Override
+    public Optional<BiConsumer<@Nullable ClassLoader, Throwable>> getContextErrorHandler() {
+        return Optional.ofNullable(errorEvent);
     }
 
     @Override
