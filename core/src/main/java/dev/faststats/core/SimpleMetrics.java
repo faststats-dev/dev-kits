@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiPredicate;
 import java.util.zip.GZIPOutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -62,11 +63,11 @@ public abstract class SimpleMetrics implements Metrics {
     protected SimpleMetrics(Factory<?> factory, Path config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
-        this.charts = Set.copyOf(factory.charts);
         this.config = new Config(config);
+        this.charts = this.config.additionalMetrics ? Set.copyOf(factory.charts) : Set.of();
         this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || this.config.debug();
         this.token = factory.token;
-        this.tracker = factory.tracker;
+        this.tracker = this.config.errorTracking ? factory.tracker : null;
         this.url = factory.url;
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -85,7 +86,7 @@ public abstract class SimpleMetrics implements Metrics {
             throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
         }
 
-        this.charts = Set.copyOf(charts);
+        this.charts = config.additionalMetrics ? Set.copyOf(charts) : Set.of();
         this.config = config;
         this.debug = debug;
         this.token = token;
@@ -339,8 +340,10 @@ public abstract class SimpleMetrics implements Metrics {
 
     protected static final class Config implements Metrics.Config {
         private final UUID serverId;
+        private final boolean additionalMetrics;
         private final boolean debug;
         private final boolean enabled;
+        private final boolean errorTracking;
         private final boolean firstRun;
 
         @Contract(mutates = "io")
@@ -359,23 +362,37 @@ public abstract class SimpleMetrics implements Metrics {
                     saveConfig.set(true);
                     return UUID.randomUUID();
                 }
-            }).orElseGet(UUID::randomUUID);
+            }).orElseGet(() -> {
+                saveConfig.set(true);
+                return UUID.randomUUID();
+            });
 
-            this.enabled = properties.map(object -> object.getProperty("enabled")).map(Boolean::parseBoolean).orElse(true);
-            this.debug = properties.map(object -> object.getProperty("debug")).map(Boolean::parseBoolean).orElse(false);
+            BiPredicate<String, Boolean> predicate = (key, defaultValue) -> {
+                return properties.map(object -> object.getProperty(key)).map(Boolean::parseBoolean).orElseGet(() -> {
+                    saveConfig.set(true);
+                    return defaultValue;
+                });
+            };
+
+            this.enabled = predicate.test("enabled", true);
+            this.errorTracking = predicate.test("submitErrors", true);
+            this.additionalMetrics = predicate.test("submitAdditionalMetrics", true);
+            this.debug = predicate.test("debug", false);
 
             if (saveConfig.get()) try {
-                save(file, serverId, enabled, debug);
+                save(file, serverId, enabled, errorTracking, additionalMetrics, debug);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to save metrics config", e);
             }
         }
 
         @VisibleForTesting
-        public Config(UUID serverId, boolean enabled, boolean debug) {
+        public Config(UUID serverId, boolean enabled, boolean errorTracking, boolean additionalMetrics, boolean debug) {
             this.serverId = serverId;
             this.enabled = enabled;
             this.debug = debug;
+            this.errorTracking = errorTracking;
+            this.additionalMetrics = additionalMetrics;
             this.firstRun = false;
         }
 
@@ -387,6 +404,16 @@ public abstract class SimpleMetrics implements Metrics {
         @Override
         public boolean enabled() {
             return enabled;
+        }
+
+        @Override
+        public boolean errorTracking() {
+            return errorTracking;
+        }
+
+        @Override
+        public boolean additionalMetrics() {
+            return additionalMetrics;
         }
 
         @Override
@@ -405,7 +432,7 @@ public abstract class SimpleMetrics implements Metrics {
             }
         }
 
-        private static void save(Path file, UUID serverId, boolean enabled, boolean debug) throws IOException {
+        private static void save(Path file, UUID serverId, boolean enabled, boolean errorTracking, boolean additionalMetrics, boolean debug) throws IOException {
             Files.createDirectories(file.getParent());
             try (var out = Files.newOutputStream(file);
                  var writer = new OutputStreamWriter(out, UTF_8)) {
@@ -413,6 +440,8 @@ public abstract class SimpleMetrics implements Metrics {
 
                 properties.setProperty("serverId", serverId.toString());
                 properties.setProperty("enabled", Boolean.toString(enabled));
+                properties.setProperty("submitErrors", Boolean.toString(errorTracking));
+                properties.setProperty("submitAdditionalMetrics", Boolean.toString(additionalMetrics));
                 properties.setProperty("debug", Boolean.toString(debug));
 
                 var comment = """
