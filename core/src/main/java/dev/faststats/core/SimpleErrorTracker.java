@@ -17,7 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 final class SimpleErrorTracker implements ErrorTracker {
+    private final int messageLength = Math.min(1000, Integer.getInteger("faststats.message-length", 500));
+    private final int stackTraceLength = Math.min(500, Integer.getInteger("faststats.stack-trace-length", 300));
     private final int stackTraceLimit = Math.min(50, Integer.getInteger("faststats.stack-trace-limit", 15));
+
     private final Map<String, Integer> collected = new ConcurrentHashMap<>();
     private final Map<String, JsonObject> reports = new ConcurrentHashMap<>();
 
@@ -48,8 +51,10 @@ final class SimpleErrorTracker implements ErrorTracker {
         return Long.toHexString(hash[0]) + Long.toHexString(hash[1]);
     }
 
-    private JsonObject compile(Throwable error, @Nullable List<StackTraceElement> suppress) {
-        var stack = Arrays.asList(error.getStackTrace());
+    // todo: cleanup this absolute mess
+    private JsonObject compile(Throwable error, @Nullable List<String> suppress) {
+        var elements = error.getStackTrace();
+        var stack = collapseStackTrace(elements);
         var list = new ArrayList<>(stack);
         if (suppress != null) list.removeAll(suppress);
 
@@ -59,18 +64,22 @@ final class SimpleErrorTracker implements ErrorTracker {
         var stacktrace = new JsonArray(traces);
 
         for (var i = 0; i < traces; i++) {
-            stacktrace.add(list.get(i).toString());
+            var string = list.get(i);
+            if (string.length() <= stackTraceLength) stacktrace.add(string);
+            else stacktrace.add(string.substring(0, stackTraceLength) + "...");
         }
         if (traces > 0 && traces < list.size()) {
             stacktrace.add("and " + (list.size() - traces) + " more...");
         } else {
-            var i = stack.size() - list.size();
+            var i = elements.length - list.size();
             if (i > 0) stacktrace.add("Omitted " + i + " duplicate stack frame" + (i == 1 ? "" : "s"));
         }
 
         report.addProperty("error", error.getClass().getName());
-        if (error.getMessage() != null) {
-            report.addProperty("message", anonymize(error.getMessage()));
+        var message = error.getMessage();
+        if (message != null) {
+            if (message.length() > messageLength) message = message.substring(0, messageLength) + "...";
+            report.addProperty("message", anonymize(message));
         }
         if (!stacktrace.isEmpty()) {
             report.add("stack", stacktrace);
@@ -82,6 +91,58 @@ final class SimpleErrorTracker implements ErrorTracker {
         }
 
         return report;
+    }
+
+    public static List<String> collapseStackTrace(StackTraceElement[] trace) {
+        var lines = Arrays.stream(trace)
+                .map(StackTraceElement::toString)
+                .toList();
+
+        return collapseRepeatingPattern(lines);
+    }
+
+    public static List<String> collapseRepeatingPattern(List<String> lines) {
+        // First, collapse consecutive duplicate lines
+        var deduplicated = collapseConsecutiveDuplicates(lines);
+
+        var n = deduplicated.size();
+
+        for (var cycleLen = 1; cycleLen <= n / 2; cycleLen++) {
+            var isPattern = true;
+            var repetitions = 0;
+
+            for (var i = 0; i < n; i++) {
+                if (!deduplicated.get(i).equals(deduplicated.get(i % cycleLen))) {
+                    isPattern = false;
+                    break;
+                }
+                if (i > 0 && i % cycleLen == 0) {
+                    repetitions++;
+                }
+            }
+
+            if (isPattern && repetitions >= 2) {
+                return deduplicated.subList(0, cycleLen);
+            }
+        }
+
+        return deduplicated;
+    }
+
+    private static List<String> collapseConsecutiveDuplicates(List<String> lines) {
+        if (lines.isEmpty()) return lines;
+
+        var result = new ArrayList<String>();
+        String previous = null;
+
+        for (var line : lines) {
+            if (!line.equals(previous)) {
+                result.add(line);
+                previous = line;
+            }
+        }
+
+        return result;
     }
 
     private static final String IPV4_PATTERN =
