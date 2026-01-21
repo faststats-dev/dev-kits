@@ -245,6 +245,7 @@ public abstract class SimpleMetrics implements Metrics {
 
         getErrorTracker().map(SimpleErrorTracker.class::cast)
                 .map(SimpleErrorTracker::getData)
+                .filter(errors -> !errors.isEmpty())
                 .ifPresent(errors -> data.add("errors", errors));
         return data;
     }
