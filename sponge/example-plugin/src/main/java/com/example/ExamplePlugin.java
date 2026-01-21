@@ -13,6 +13,8 @@ import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
+import java.net.URI;
+
 
 @Plugin("example")
 public class ExamplePlugin {
@@ -30,7 +32,7 @@ public class ExamplePlugin {
     @Listener
     public void onServerStart(final StartedEngineEvent<Server> event) {
         this.metrics = factory
-               // .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
+                .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
                 // Custom example charts
                 // For this to work you have to create a corresponding data source in your project settings first
@@ -47,9 +49,8 @@ public class ExamplePlugin {
 
                 //.debug(true) // Enable debug mode for development and testing
 
-                .token("bafe240e8d1a4b919e5083928539799d") // required -> token can be found in the settings of your project
+                .token("YOUR_TOKEN_HERE") // required -> token can be found in the settings of your project
                 .create(pluginContainer);
-        ERROR_TRACKER.trackError(new RuntimeException("Something went wrong!", new Exception("Cause")));
     }
 
     @Listener
