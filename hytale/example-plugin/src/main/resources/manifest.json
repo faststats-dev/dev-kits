@@ -1,6 +1,6 @@
 {
-  "group": "com.example",
-  "name": "Example Plugin",
+  "Group": "com.example",
+  "Name": "Example Plugin",
   "version": "1.0.0",
   "description": "An example plugin for Hytale",
   "authors": [
