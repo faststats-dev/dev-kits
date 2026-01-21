@@ -60,14 +60,14 @@ public abstract class SimpleMetrics implements Metrics {
 
     @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
-    protected SimpleMetrics(Factory<?> factory, Path config) throws IllegalStateException {
+    protected SimpleMetrics(Factory<?> factory, Config config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
-        this.config = new Config(config);
-        this.charts = this.config.additionalMetrics ? Set.copyOf(factory.charts) : Set.of();
-        this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || this.config.debug();
+        this.config = config;
+        this.charts = config.additionalMetrics ? Set.copyOf(factory.charts) : Set.of();
+        this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || config.debug();
         this.token = factory.token;
-        this.tracker = this.config.errorTracking ? factory.tracker : null;
+        this.tracker = config.errorTracking ? factory.tracker : null;
         this.url = factory.url;
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -78,6 +78,11 @@ public abstract class SimpleMetrics implements Metrics {
                 error("Failed to submit metrics on shutdown", e);
             }
         }, "metrics-shutdown-thread " + getClass().getName()));
+    }
+
+    @Contract(mutates = "io")
+    protected SimpleMetrics(Factory<?> factory, Path config) throws IllegalStateException {
+        this(factory, Config.read(config));
     }
 
     @VisibleForTesting
@@ -339,21 +344,43 @@ public abstract class SimpleMetrics implements Metrics {
         }
     }
 
-    protected static final class Config implements Metrics.Config {
-        private final UUID serverId;
-        private final boolean additionalMetrics;
-        private final boolean debug;
-        private final boolean enabled;
-        private final boolean errorTracking;
-        private final boolean firstRun;
+    public record Config(
+            UUID serverId,
+            boolean additionalMetrics,
+            boolean debug,
+            boolean enabled,
+            boolean errorTracking,
+            boolean firstRun
+    ) implements Metrics.Config {
+
+        public static final String DEFAULT_COMMENT = """
+                 FastStats (https://faststats.dev) collects anonymous usage statistics for plugin developers.
+                # This helps developers understand how their projects are used in the real world.
+                #
+                # No IP addresses, player data, or personal information is collected.
+                # The server ID below is randomly generated and can be regenerated at any time.
+                #
+                # Enabling metrics has no noticeable performance impact.
+                # Keeping metrics enabled is recommended, but you can disable them by setting 'enabled=false'.
+                #
+                # If you suspect a plugin is collecting personal data or bypassing the "enabled" option,
+                # please report it at: https://faststats.dev/abuse
+                #
+                # For more information, visit: https://faststats.dev/info
+                """;
 
         @Contract(mutates = "io")
-        protected Config(Path file) {
-            var properties = readOrEmpty(file);
-            this.firstRun = properties.isEmpty();
-            var saveConfig = new AtomicBoolean(this.firstRun);
+        public static Config read(Path file) throws RuntimeException {
+            return read(file, DEFAULT_COMMENT, false, false);
+        }
 
-            this.serverId = properties.map(object -> object.getProperty("serverId")).map(string -> {
+        @Contract(mutates = "io")
+        public static Config read(Path file, String comment, boolean externallyManaged, boolean externallyEnabled) throws RuntimeException {
+            var properties = readOrEmpty(file);
+            var firstRun = properties.isEmpty();
+            var saveConfig = new AtomicBoolean(firstRun);
+
+            var serverId = properties.map(object -> object.getProperty("serverId")).map(string -> {
                 try {
                     var trimmed = string.trim();
                     var corrected = trimmed.length() > 36 ? trimmed.substring(0, 36) : trimmed;
@@ -375,54 +402,21 @@ public abstract class SimpleMetrics implements Metrics {
                 });
             };
 
-            this.enabled = predicate.test("enabled", true);
-            this.errorTracking = predicate.test("submitErrors", true);
-            this.additionalMetrics = predicate.test("submitAdditionalMetrics", true);
-            this.debug = predicate.test("debug", false);
+            var enabled = externallyManaged ? externallyEnabled : predicate.test("enabled", true);
+            var errorTracking = predicate.test("submitErrors", true);
+            var additionalMetrics = predicate.test("submitAdditionalMetrics", true);
+            var debug = predicate.test("debug", false);
 
             if (saveConfig.get()) try {
-                save(file, serverId, enabled, errorTracking, additionalMetrics, debug);
+                save(file, externallyManaged, comment, serverId, enabled, errorTracking, additionalMetrics, debug);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to save metrics config", e);
             }
+
+            return new Config(serverId, additionalMetrics, debug, enabled, errorTracking, firstRun);
         }
 
-        @VisibleForTesting
-        public Config(UUID serverId, boolean enabled, boolean errorTracking, boolean additionalMetrics, boolean debug) {
-            this.serverId = serverId;
-            this.enabled = enabled;
-            this.debug = debug;
-            this.errorTracking = errorTracking;
-            this.additionalMetrics = additionalMetrics;
-            this.firstRun = false;
-        }
-
-        @Override
-        public UUID serverId() {
-            return serverId;
-        }
-
-        @Override
-        public boolean enabled() {
-            return enabled;
-        }
-
-        @Override
-        public boolean errorTracking() {
-            return errorTracking;
-        }
-
-        @Override
-        public boolean additionalMetrics() {
-            return additionalMetrics;
-        }
-
-        @Override
-        public boolean debug() {
-            return debug;
-        }
-
-        private static Optional<Properties> readOrEmpty(Path file) {
+        private static Optional<Properties> readOrEmpty(Path file) throws RuntimeException {
             if (!Files.isRegularFile(file)) return Optional.empty();
             try (var reader = Files.newBufferedReader(file, UTF_8)) {
                 var properties = new Properties();
@@ -433,33 +427,18 @@ public abstract class SimpleMetrics implements Metrics {
             }
         }
 
-        private static void save(Path file, UUID serverId, boolean enabled, boolean errorTracking, boolean additionalMetrics, boolean debug) throws IOException {
+        private static void save(Path file, boolean externallyManaged, String comment, UUID serverId, boolean enabled, boolean errorTracking, boolean additionalMetrics, boolean debug) throws IOException {
             Files.createDirectories(file.getParent());
             try (var out = Files.newOutputStream(file);
                  var writer = new OutputStreamWriter(out, UTF_8)) {
                 var properties = new Properties();
 
                 properties.setProperty("serverId", serverId.toString());
-                properties.setProperty("enabled", Boolean.toString(enabled));
+                if (!externallyManaged) properties.setProperty("enabled", Boolean.toString(enabled));
                 properties.setProperty("submitErrors", Boolean.toString(errorTracking));
                 properties.setProperty("submitAdditionalMetrics", Boolean.toString(additionalMetrics));
                 properties.setProperty("debug", Boolean.toString(debug));
 
-                var comment = """
-                         FastStats (https://faststats.dev) collects anonymous usage statistics for plugin developers.
-                        # This helps developers understand how their projects are used in the real world.
-                        #
-                        # No IP addresses, player data, or personal information is collected.
-                        # The server ID below is randomly generated and can be regenerated at any time.
-                        #
-                        # Enabling metrics has no noticeable performance impact.
-                        # Keeping metrics enabled is recommended, but you can disable them by setting 'enabled=false'.
-                        #
-                        # If you suspect a plugin is collecting personal data or bypassing the "enabled" option,
-                        # please report it at: https://faststats.dev/abuse
-                        #
-                        # For more information, visit: https://faststats.dev/info
-                        """;
                 properties.store(writer, comment);
             }
         }
