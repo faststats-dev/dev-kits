@@ -6,5 +6,5 @@ repositories {
 
 dependencies {
     api(project(":core"))
-    compileOnly("org.spongepowered:spongeapi:8.0.0")
+    compileOnly("org.spongepowered:spongeapi:8.3.0-SNAPSHOT")
 }
