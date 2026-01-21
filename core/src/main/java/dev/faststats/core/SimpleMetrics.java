@@ -149,7 +149,7 @@ public abstract class SimpleMetrics implements Metrics {
             } catch (Throwable t) {
                 error("Failed to submit metrics", t);
             }
-        }, initialDelay, period, unit);
+        }, Math.max(0, initialDelay), Math.max(1000, period), unit);
     }
 
     protected boolean isSubmitting() {
