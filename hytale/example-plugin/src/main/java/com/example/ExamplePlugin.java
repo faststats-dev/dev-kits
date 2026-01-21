@@ -2,6 +2,7 @@ package com.example;
 
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import dev.faststats.core.ErrorTracker;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.chart.Chart;
 import dev.faststats.hytale.HytaleMetrics;
@@ -9,6 +10,12 @@ import dev.faststats.hytale.HytaleMetrics;
 import java.net.URI;
 
 public class ExamplePlugin extends JavaPlugin {
+    // context-aware error tracker, automatically tracks errors in the same class loader
+    public static final ErrorTracker ERROR_TRACKER = ErrorTracker.contextAware();
+
+    // context-unaware error tracker, does not automatically track errors
+    public static final ErrorTracker CONTEXT_UNAWARE_ERROR_TRACKER = ErrorTracker.contextUnaware();
+
     private final Metrics metrics = HytaleMetrics.factory()
             .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
@@ -20,6 +27,10 @@ public class ExamplePlugin extends JavaPlugin {
             .addChart(Chart.stringArray("example_string_array", () -> new String[]{"Option 1", "Option 2"}))
             .addChart(Chart.numberArray("example_number_array", () -> new Number[]{1, 2, 3}))
             .addChart(Chart.booleanArray("example_boolean_array", () -> new Boolean[]{true, false}))
+
+            // Attach an error tracker
+            // This must be enabled in the project settings
+            .errorTracker(ERROR_TRACKER)
 
             .debug(true) // Enable debug mode for development and testing
 
@@ -33,5 +44,14 @@ public class ExamplePlugin extends JavaPlugin {
     @Override
     protected void shutdown() {
         metrics.shutdown();
+    }
+
+    public void doSomethingWrong() {
+        try {
+            // Do something that might throw an error
+            throw new RuntimeException("Something went wrong!");
+        } catch (Exception e) {
+            CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
+        }
     }
 }
