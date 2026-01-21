@@ -47,7 +47,7 @@ public class ExamplePlugin {
                 // This must be enabled in the project settings
                 .errorTracker(ERROR_TRACKER)
 
-                //.debug(true) // Enable debug mode for development and testing
+                .debug(true) // Enable debug mode for development and testing
 
                 .token("YOUR_TOKEN_HERE") // required -> token can be found in the settings of your project
                 .create(pluginContainer);
