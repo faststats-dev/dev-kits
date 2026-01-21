@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 @NullMarked
 public class MockMetrics extends SimpleMetrics {
     public MockMetrics(UUID serverId, @Token String token, @Nullable ErrorTracker tracker, boolean debug) {
-        super(new Config(serverId, true, debug, true, true, false), Set.of(), token, tracker, URI.create("http://localhost:5000/v1/collect"), debug);
+        super(new Config(serverId, true, debug, true, true, false, false), Set.of(), token, tracker, URI.create("http://localhost:5000/v1/collect"), debug);
     }
 
     @Override

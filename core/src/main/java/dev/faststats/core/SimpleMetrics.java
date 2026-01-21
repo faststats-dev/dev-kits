@@ -36,15 +36,6 @@ import java.util.zip.GZIPOutputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class SimpleMetrics implements Metrics {
-    protected static final String ONBOARDING_MESSAGE = """
-            This plugin uses FastStats to collect anonymous usage statistics.
-            No personal or identifying information is ever collected.
-            To opt out, set 'enabled=false' in the metrics configuration file.
-            Learn more at: https://faststats.dev/info
-            
-            Since this is your first start with FastStats, metrics submission will not start
-            until you restart the server to allow you to opt out if you prefer.""";
-
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
             .version(HttpClient.Version.HTTP_1_1)
@@ -99,6 +90,17 @@ public abstract class SimpleMetrics implements Metrics {
         this.url = url;
     }
 
+    protected String getOnboardingMessage() {
+        return """
+                This plugin uses FastStats to collect anonymous usage statistics.
+                No personal or identifying information is ever collected.
+                To opt out, set 'enabled=false' in the metrics configuration file.
+                Learn more at: https://faststats.dev/info
+                
+                Since this is your first start with FastStats, metrics submission will not start
+                until you restart the server to allow you to opt out if you prefer.""";
+    }
+
     protected long getInitialDelay() {
         return TimeUnit.SECONDS.toMillis(Long.getLong("faststats.initial-delay", 30));
     }
@@ -121,12 +123,16 @@ public abstract class SimpleMetrics implements Metrics {
 
         if (config.firstRun) {
 
-            printInfo("-".repeat(80));
-            for (var s : ONBOARDING_MESSAGE.split("\n")) printInfo(s);
-            printInfo("-".repeat(80));
+            var separatorLength = 0;
+            var split = getOnboardingMessage().split("\n");
+            for (var s : split) if (s.length() > separatorLength) separatorLength = s.length();
+            
+            printInfo("-".repeat(separatorLength));
+            for (var s : split) printInfo(s);
+            printInfo("-".repeat(separatorLength));
 
             System.setProperty("faststats.first-run", "true");
-            return;
+            if (!config.externallyManaged()) return;
         }
 
         var enabled = Boolean.parseBoolean(System.getProperty("faststats.enabled", "true"));
@@ -350,7 +356,8 @@ public abstract class SimpleMetrics implements Metrics {
             boolean debug,
             boolean enabled,
             boolean errorTracking,
-            boolean firstRun
+            boolean firstRun,
+            boolean externallyManaged
     ) implements Metrics.Config {
 
         public static final String DEFAULT_COMMENT = """
@@ -413,7 +420,7 @@ public abstract class SimpleMetrics implements Metrics {
                 throw new RuntimeException("Failed to save metrics config", e);
             }
 
-            return new Config(serverId, additionalMetrics, debug, enabled, errorTracking, firstRun);
+            return new Config(serverId, additionalMetrics, debug, enabled, errorTracking, firstRun, externallyManaged);
         }
 
         private static Optional<Properties> readOrEmpty(Path file) throws RuntimeException {
