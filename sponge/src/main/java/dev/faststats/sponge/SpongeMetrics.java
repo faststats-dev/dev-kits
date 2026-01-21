@@ -10,7 +10,7 @@ import java.nio.file.Path;
 /**
  * Sponge metrics implementation.
  *
- * @since 0.1.0
+ * @since 0.12.0
  */
 public sealed interface SpongeMetrics extends Metrics permits SpongeMetricsImpl {
     final class Factory extends SpongeMetricsImpl.Factory {
@@ -20,7 +20,7 @@ public sealed interface SpongeMetrics extends Metrics permits SpongeMetricsImpl 
          * @param logger        the logger
          * @param dataDirectory the data directory
          * @apiNote This instance is automatically injected into your plugin.
-         * @since 0.1.0
+         * @since 0.12.0
          */
         @Inject
         private Factory(Logger logger, @ConfigDir(sharedRoot = true) Path dataDirectory) {
