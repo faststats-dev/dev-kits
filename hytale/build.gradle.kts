@@ -126,8 +126,10 @@ tasks.register("download-server") {
 
 tasks.register("update-server") {
     group = "hytale"
-    hytaleServerJar.asFile.delete()
-    hytaleZip.get().asFile.delete()
+    doFirst {
+        hytaleServerJar.asFile.delete()
+        hytaleZip.get().asFile.delete()
+    }
     dependsOn(tasks.named("download-server"))
 }
 
