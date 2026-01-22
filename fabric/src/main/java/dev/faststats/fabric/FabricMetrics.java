@@ -7,14 +7,14 @@ import org.jetbrains.annotations.Contract;
 /**
  * Fabric metrics implementation.
  *
- * @since 0.13.0
+ * @since 0.12.0
  */
 public sealed interface FabricMetrics extends Metrics permits FabricMetricsImpl {
     /**
      * Creates a new metrics factory for Fabric.
      *
      * @return the metrics factory
-     * @since 0.13.0
+     * @since 0.12.0
      */
     @Contract(pure = true)
     static Factory factory() {
@@ -32,7 +32,7 @@ public sealed interface FabricMetrics extends Metrics permits FabricMetricsImpl 
          * @throws IllegalStateException    if the token is not specified
          * @throws IllegalArgumentException if the mod is not found
          * @see #token(String)
-         * @since 0.13.0
+         * @since 0.12.0
          */
         @Override
         @Async.Schedule
