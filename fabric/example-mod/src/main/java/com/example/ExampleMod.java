@@ -6,6 +6,8 @@ import dev.faststats.core.chart.Chart;
 import dev.faststats.fabric.FabricMetrics;
 import net.fabricmc.api.ModInitializer;
 
+import java.net.URI;
+
 public class ExampleMod implements ModInitializer {
     // context-aware error tracker, automatically tracks errors in the same class loader
     public static final ErrorTracker ERROR_TRACKER = ErrorTracker.contextAware();
@@ -14,7 +16,7 @@ public class ExampleMod implements ModInitializer {
     public static final ErrorTracker CONTEXT_UNAWARE_ERROR_TRACKER = ErrorTracker.contextUnaware();
 
     private final Metrics metrics = FabricMetrics.factory()
-            //.url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
+            .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
             // Custom example charts
             // For this to work you have to create a corresponding data source in your project settings first
@@ -31,7 +33,7 @@ public class ExampleMod implements ModInitializer {
 
             .debug(true) // Enable debug mode for development and testing
 
-            .token("sadlskmsldmkfglsdkmfgksjdfhngkjd") // required -> token can be found in the settings of your project
+            .token("YOUR_TOKEN_HERE") // required -> token can be found in the settings of your project
             .create("example-mod"); // your mod id as defined in fabric.mod.json
 
     public void doSomethingWrong() {
