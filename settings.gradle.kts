@@ -11,6 +11,7 @@ rootProject.name = "dev-kits"
 include("bukkit")
 include("bukkit:example-plugin")
 include("bungeecord")
+include("bungeecord:example-plugin")
 include("core")
 include("fabric")
 include("fabric:example-mod")
