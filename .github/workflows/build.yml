@@ -39,6 +39,6 @@ jobs:
           HYTALE_DOWNLOADER_CREDENTIALS: ${{ secrets.HYTALE_DOWNLOADER_CREDENTIALS }}
         run: ./gradlew :hytale:download-server
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew shadowJar
       - name: Test with Gradle
         run: ./gradlew test
