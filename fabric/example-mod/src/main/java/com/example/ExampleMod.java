@@ -1,0 +1,49 @@
+package com.example;
+
+import dev.faststats.core.ErrorTracker;
+import dev.faststats.core.Metrics;
+import dev.faststats.core.chart.Chart;
+import dev.faststats.fabric.FabricMetrics;
+import net.fabricmc.api.ModInitializer;
+
+public class ExampleMod implements ModInitializer {
+    // context-aware error tracker, automatically tracks errors in the same class loader
+    public static final ErrorTracker ERROR_TRACKER = ErrorTracker.contextAware();
+
+    // context-unaware error tracker, does not automatically track errors
+    public static final ErrorTracker CONTEXT_UNAWARE_ERROR_TRACKER = ErrorTracker.contextUnaware();
+
+    private final Metrics metrics = FabricMetrics.factory()
+            //.url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
+
+            // Custom example charts
+            // For this to work you have to create a corresponding data source in your project settings first
+            .addChart(Chart.number("example_chart", () -> 42))
+            .addChart(Chart.string("example_string", () -> "Hello, World!"))
+            .addChart(Chart.bool("example_boolean", () -> true))
+            .addChart(Chart.stringArray("example_string_array", () -> new String[]{"Option 1", "Option 2"}))
+            .addChart(Chart.numberArray("example_number_array", () -> new Number[]{1, 2, 3}))
+            .addChart(Chart.booleanArray("example_boolean_array", () -> new Boolean[]{true, false}))
+
+            // Attach an error tracker
+            // This must be enabled in the project settings
+            .errorTracker(ERROR_TRACKER)
+
+            .debug(true) // Enable debug mode for development and testing
+
+            .token("sadlskmsldmkfglsdkmfgksjdfhngkjd") // required -> token can be found in the settings of your project
+            .create("example-mod"); // your mod id as defined in fabric.mod.json
+
+    public void doSomethingWrong() {
+        try {
+            // Do something that might throw an error
+            throw new RuntimeException("Something went wrong!");
+        } catch (Exception e) {
+            CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
+        }
+    }
+
+    @Override
+    public void onInitialize() {
+    }
+}
