@@ -17,7 +17,10 @@ public sealed interface MinestomMetrics extends Metrics permits MinestomMetricsI
      * @since 0.1.0
      */
     @Contract(pure = true)
-    static Metrics.Factory<MinecraftServer> factory() {
+    static Factory factory() {
         return new MinestomMetricsImpl.Factory();
+    }
+
+    interface Factory extends Metrics.Factory<MinecraftServer, Factory> {
     }
 }

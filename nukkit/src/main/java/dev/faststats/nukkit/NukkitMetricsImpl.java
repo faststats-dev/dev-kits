@@ -21,7 +21,7 @@ final class NukkitMetricsImpl extends SimpleMetrics implements NukkitMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private NukkitMetricsImpl(SimpleMetrics.Factory<?> factory, PluginBase plugin, Path config) throws IllegalStateException {
+    private NukkitMetricsImpl(Factory factory, PluginBase plugin, Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -63,7 +63,7 @@ final class NukkitMetricsImpl extends SimpleMetrics implements NukkitMetrics {
         }
     }
 
-    static final class Factory extends SimpleMetrics.Factory<PluginBase> {
+    static final class Factory extends SimpleMetrics.Factory<PluginBase, NukkitMetrics.Factory> implements NukkitMetrics.Factory {
         @Override
         public Metrics create(PluginBase plugin) throws IllegalStateException {
             var dataFolder = Path.of(plugin.getServer().getPluginPath(), "faststats");

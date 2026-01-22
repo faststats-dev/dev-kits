@@ -51,7 +51,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
-    protected SimpleMetrics(Factory<?> factory, Config config) throws IllegalStateException {
+    protected SimpleMetrics(Factory<?, ?> factory, Config config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
         this.config = config;
@@ -72,7 +72,7 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     @Contract(mutates = "io")
-    protected SimpleMetrics(Factory<?> factory, Path config) throws IllegalStateException {
+    protected SimpleMetrics(Factory<?, ?> factory, Path config) throws IllegalStateException {
         this(factory, Config.read(config));
     }
 
@@ -126,7 +126,7 @@ public abstract class SimpleMetrics implements Metrics {
             var separatorLength = 0;
             var split = getOnboardingMessage().split("\n");
             for (var s : split) if (s.length() > separatorLength) separatorLength = s.length();
-            
+
             printInfo("-".repeat(separatorLength));
             for (var s : split) printInfo(s);
             printInfo("-".repeat(separatorLength));
@@ -309,7 +309,7 @@ public abstract class SimpleMetrics implements Metrics {
         executor = null;
     }
 
-    public abstract static class Factory<T> implements Metrics.Factory<T> {
+    public abstract static class Factory<T, F extends Metrics.Factory<T, F>> implements Metrics.Factory<T, F> {
         private final Set<Chart<?>> charts = new HashSet<>(0);
         private URI url = URI.create("https://metrics.faststats.dev/v1/collect");
         private @Nullable ErrorTracker tracker;
@@ -317,36 +317,41 @@ public abstract class SimpleMetrics implements Metrics {
         private boolean debug = false;
 
         @Override
-        public Metrics.Factory<T> addChart(Chart<?> chart) throws IllegalArgumentException {
+        @SuppressWarnings("unchecked")
+        public F addChart(Chart<?> chart) throws IllegalArgumentException {
             if (!charts.add(chart)) throw new IllegalArgumentException("Chart already added: " + chart.getId());
-            return this;
+            return (F) this;
         }
 
         @Override
-        public Metrics.Factory<T> errorTracker(ErrorTracker tracker) {
+        @SuppressWarnings("unchecked")
+        public F errorTracker(ErrorTracker tracker) {
             this.tracker = tracker;
-            return this;
+            return (F) this;
         }
 
         @Override
-        public Metrics.Factory<T> debug(boolean enabled) {
+        @SuppressWarnings("unchecked")
+        public F debug(boolean enabled) {
             this.debug = enabled;
-            return this;
+            return (F) this;
         }
 
         @Override
-        public Metrics.Factory<T> token(@Token String token) throws IllegalArgumentException {
+        @SuppressWarnings("unchecked")
+        public F token(@Token String token) throws IllegalArgumentException {
             if (!token.matches(Token.PATTERN)) {
                 throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
             }
             this.token = token;
-            return this;
+            return (F) this;
         }
 
         @Override
-        public Metrics.Factory<T> url(URI url) {
+        @SuppressWarnings("unchecked")
+        public F url(URI url) {
             this.url = url;
-            return this;
+            return (F) this;
         }
     }
 

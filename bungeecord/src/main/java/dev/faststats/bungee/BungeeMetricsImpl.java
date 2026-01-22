@@ -20,7 +20,7 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private BungeeMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IllegalStateException {
+    private BungeeMetricsImpl(Factory factory, Plugin plugin, Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -54,7 +54,7 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
         logger.warning(message);
     }
 
-    static final class Factory extends SimpleMetrics.Factory<Plugin> {
+    static final class Factory extends SimpleMetrics.Factory<Plugin, BungeeMetrics.Factory> implements BungeeMetrics.Factory {
         @Override
         public Metrics create(Plugin plugin) throws IllegalStateException {
             var dataFolder = plugin.getProxy().getPluginsFolder().toPath().resolve("faststats");

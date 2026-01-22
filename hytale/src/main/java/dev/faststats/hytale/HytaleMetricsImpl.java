@@ -18,7 +18,7 @@ final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private HytaleMetricsImpl(SimpleMetrics.Factory<?> factory, HytaleLogger logger, Path config) throws IllegalStateException {
+    private HytaleMetricsImpl(Factory factory, HytaleLogger logger, Path config) throws IllegalStateException {
         super(factory, config);
         this.logger = logger;
 
@@ -47,7 +47,7 @@ final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
         logger.atWarning().log(message);
     }
 
-    static final class Factory extends SimpleMetrics.Factory<JavaPlugin> {
+    static final class Factory extends SimpleMetrics.Factory<JavaPlugin, HytaleMetrics.Factory> implements HytaleMetrics.Factory {
         @Override
         public Metrics create(JavaPlugin plugin) throws IllegalStateException {
             var mods = plugin.getDataDirectory().toAbsolutePath().getParent();

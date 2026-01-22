@@ -58,7 +58,7 @@ public interface Metrics {
      *
      * @since 0.1.0
      */
-    interface Factory<T> {
+    interface Factory<T, F extends Factory<T, F>> {
         /**
          * Adds a chart to the metrics submission.
          * <p>
@@ -70,7 +70,7 @@ public interface Metrics {
          * @since 0.1.0
          */
         @Contract(mutates = "this")
-        Factory<T> addChart(Chart<?> chart) throws IllegalArgumentException;
+        F addChart(Chart<?> chart) throws IllegalArgumentException;
 
         /**
          * Sets the error tracker for this metrics instance.
@@ -82,7 +82,7 @@ public interface Metrics {
          * @since 0.10.0
          */
         @Contract(mutates = "this")
-        Factory<T> errorTracker(ErrorTracker tracker);
+        F errorTracker(ErrorTracker tracker);
 
         /**
          * Enables or disabled debug mode for this metrics instance.
@@ -97,7 +97,7 @@ public interface Metrics {
          * @since 0.1.0
          */
         @Contract(mutates = "this")
-        Factory<T> debug(boolean enabled);
+        F debug(boolean enabled);
 
         /**
          * Sets the token used to authenticate with the metrics server and identify the project.
@@ -110,7 +110,7 @@ public interface Metrics {
          * @since 0.1.0
          */
         @Contract(mutates = "this")
-        Factory<T> token(@Token String token) throws IllegalArgumentException;
+        F token(@Token String token) throws IllegalArgumentException;
 
         /**
          * Sets the metrics server URL.
@@ -122,23 +122,22 @@ public interface Metrics {
          * @since 0.1.0
          */
         @Contract(mutates = "this")
-        Factory<T> url(URI url);
+        F url(URI url);
 
         /**
          * Creates a new metrics instance.
          * <p>
          * Metrics submission will start automatically.
          *
-         * @param plugin the plugin instance
+         * @param object a required object as defined by the implementation
          * @return the metrics instance
          * @throws IllegalStateException    if the token is not specified
-         * @throws IllegalArgumentException if the given object is not a valid plugin
          * @see #token(String)
          * @since 0.1.0
          */
         @Async.Schedule
         @Contract(value = "_ -> new", mutates = "io")
-        Metrics create(T plugin) throws IllegalStateException, IllegalArgumentException;
+        Metrics create(T object) throws IllegalStateException;
     }
 
     /**

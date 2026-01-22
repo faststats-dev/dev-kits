@@ -17,7 +17,10 @@ public sealed interface BungeeMetrics extends Metrics permits BungeeMetricsImpl 
      * @since 0.1.0
      */
     @Contract(pure = true)
-    static Factory<Plugin> factory() {
+    static Factory factory() {
         return new BungeeMetricsImpl.Factory();
+    }
+
+    interface Factory extends Metrics.Factory<Plugin, Factory> {
     }
 }

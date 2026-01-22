@@ -22,7 +22,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private BukkitMetricsImpl(SimpleMetrics.Factory<?> factory, Plugin plugin, Path config) throws IllegalStateException {
+    private BukkitMetricsImpl(Factory factory, Plugin plugin, Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -91,7 +91,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         }
     }
 
-    static final class Factory extends SimpleMetrics.Factory<Plugin> {
+    static final class Factory extends SimpleMetrics.Factory<Plugin, BukkitMetrics.Factory> implements BukkitMetrics.Factory {
         @Override
         public Metrics create(Plugin plugin) throws IllegalStateException {
             var dataFolder = getPluginsFolder(plugin).resolve("faststats");

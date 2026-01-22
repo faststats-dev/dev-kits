@@ -17,7 +17,10 @@ public sealed interface BukkitMetrics extends Metrics permits BukkitMetricsImpl 
      * @since 0.1.0
      */
     @Contract(pure = true)
-    static Metrics.Factory<Plugin> factory() {
+    static Factory factory() {
         return new BukkitMetricsImpl.Factory();
+    }
+
+    interface Factory extends Metrics.Factory<Plugin, Factory> {
     }
 }

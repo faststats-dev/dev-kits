@@ -18,7 +18,7 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private MinestomMetricsImpl(SimpleMetrics.Factory<?> factory, Path config) throws IllegalStateException {
+    private MinestomMetricsImpl(Factory factory, Path config) throws IllegalStateException {
         super(factory, config);
 
         startSubmitting();
@@ -47,7 +47,7 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
         logger.warn(message);
     }
 
-    static final class Factory extends SimpleMetrics.Factory<MinecraftServer> {
+    static final class Factory extends SimpleMetrics.Factory<MinecraftServer, MinestomMetrics.Factory> implements MinestomMetrics.Factory {
         @Override
         public Metrics create(MinecraftServer server) throws IllegalStateException {
             var config = Path.of("faststats", "config.properties");

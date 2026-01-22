@@ -21,7 +21,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     @Async.Schedule
     @Contract(mutates = "io")
     private VelocityMetricsImpl(
-            SimpleMetrics.Factory<?> factory,
+            Factory factory,
             Logger logger,
             ProxyServer server,
             Path config,
@@ -61,7 +61,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         logger.warn(message);
     }
 
-    static class Factory extends SimpleMetrics.Factory<Object> {
+    static class Factory extends SimpleMetrics.Factory<Object, VelocityMetrics.Factory> {
         protected final Logger logger;
         protected final Path dataDirectory;
         protected final ProxyServer server;
@@ -72,6 +72,18 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
             this.server = server;
         }
 
+        /**
+         * Creates a new metrics instance.
+         * <p>
+         * Metrics submission will start automatically.
+         *
+         * @param plugin the plugin instance
+         * @return the metrics instance
+         * @throws IllegalStateException    if the token is not specified
+         * @throws IllegalArgumentException if the given object is not a valid plugin
+         * @see #token(String)
+         * @since 0.1.0
+         */
         @Override
         public Metrics create(Object plugin) throws IllegalStateException, IllegalArgumentException {
             var faststats = dataDirectory.resolveSibling("faststats");

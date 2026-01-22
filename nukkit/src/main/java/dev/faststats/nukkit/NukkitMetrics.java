@@ -17,7 +17,10 @@ public sealed interface NukkitMetrics extends Metrics permits NukkitMetricsImpl 
      * @since 0.8.0
      */
     @Contract(pure = true)
-    static Metrics.Factory<PluginBase> factory() {
+    static Factory factory() {
         return new NukkitMetricsImpl.Factory();
+    }
+
+    interface Factory extends Metrics.Factory<PluginBase, Factory> {
     }
 }

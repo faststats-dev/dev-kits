@@ -17,7 +17,10 @@ public sealed interface HytaleMetrics extends Metrics permits HytaleMetricsImpl 
      * @since 0.9.0
      */
     @Contract(pure = true)
-    static Metrics.Factory<JavaPlugin> factory() {
+    static Factory factory() {
         return new HytaleMetricsImpl.Factory();
+    }
+
+    interface Factory extends Metrics.Factory<JavaPlugin, Factory> {
     }
 }

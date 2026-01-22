@@ -37,7 +37,7 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
     @Async.Schedule
     @Contract(mutates = "io")
     private SpongeMetricsImpl(
-            SimpleMetrics.Factory<?> factory,
+            Factory factory,
             Logger logger,
             PluginContainer plugin,
             Path config
@@ -85,7 +85,7 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
         logger.warn(message);
     }
 
-    static class Factory extends SimpleMetrics.Factory<PluginContainer> {
+    static class Factory extends SimpleMetrics.Factory<PluginContainer, SpongeMetrics.Factory> {
         protected final Logger logger;
         protected final Path dataDirectory;
 
