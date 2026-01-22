@@ -21,8 +21,8 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
 
-    val examplePlugin = project.name.equals("example-plugin")
-    if (examplePlugin) {
+    val example = project.name.startsWith("example")
+    if (example) {
         apply(plugin = "com.gradleup.shadow")
     } else {
         apply(plugin = "maven-publish")
@@ -133,7 +133,7 @@ subprojects {
     }
 
     afterEvaluate {
-        if (examplePlugin) return@afterEvaluate
+        if (example) return@afterEvaluate
         extensions.configure<PublishingExtension> {
             publications.create<MavenPublication>("maven") {
                 artifactId = project.name
