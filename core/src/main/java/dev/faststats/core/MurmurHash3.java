@@ -1,5 +1,6 @@
 package dev.faststats.core;
 
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Contract;
 
 import java.nio.charset.StandardCharsets;
@@ -20,6 +21,11 @@ import java.nio.charset.StandardCharsets;
  * </p>
  */
 final class MurmurHash3 {
+    public static String hash(final JsonObject object) {
+        final var hash = MurmurHash3.hash(object.toString());
+        return Long.toHexString(hash[0]) + Long.toHexString(hash[1]);
+    }
+
     /**
      * Computes the 128-bit MurmurHash3 hash of the input string.
      * <p>
@@ -32,7 +38,7 @@ final class MurmurHash3 {
      * @see <a href="https://en.wikipedia.org/wiki/MurmurHash">MurmurHash on Wikipedia</a>
      */
     @Contract(value = "_ -> new", pure = true)
-    public static long[] hash(final String data) {
+    private static long[] hash(final String data) {
         final var bytes = data.getBytes(StandardCharsets.UTF_8);
         var h1 = 0L;
         var h2 = 0L;
