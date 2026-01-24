@@ -40,7 +40,7 @@ public class ExamplePlugin extends Plugin {
     public void onDisable() {
         metrics.shutdown();
     }
-    
+
     public void doSomethingWrong() {
         try {
             // Do something that might throw an error

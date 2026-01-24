@@ -28,7 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Publish with Gradle to Repository
-        env: 
+        env:
           REPOSITORY_USER: ${{ secrets.REPOSITORY_USER }}
           REPOSITORY_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
         run: ./gradlew publish
