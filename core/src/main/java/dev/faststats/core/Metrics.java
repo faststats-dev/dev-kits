@@ -47,7 +47,6 @@ public interface Metrics {
      * <p>
      * This method should be called when the application is shutting down.
      *
-     * @apiNote This method is called automatically under normal circumstances.
      * @since 0.1.0
      */
     @Contract(mutates = "this")
@@ -131,7 +130,7 @@ public interface Metrics {
          *
          * @param object a required object as defined by the implementation
          * @return the metrics instance
-         * @throws IllegalStateException    if the token is not specified
+         * @throws IllegalStateException if the token is not specified
          * @see #token(String)
          * @since 0.1.0
          */
