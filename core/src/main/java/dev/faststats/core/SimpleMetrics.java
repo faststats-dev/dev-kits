@@ -303,10 +303,16 @@ public abstract class SimpleMetrics implements Metrics {
 
     @Override
     public void shutdown() {
-        if (executor == null) return;
-        info("Shutting down metrics submission");
-        executor.shutdown();
-        executor = null;
+        getErrorTracker().ifPresent(ErrorTracker::detachErrorContext);
+        if (executor != null) try {
+            info("Shutting down metrics submission");
+            executor.shutdown();
+            submit();
+        } catch (Throwable t) {
+            error("Failed to submit metrics on shutdown", t);
+        } finally {
+            executor = null;
+        }
     }
 
     public abstract static class Factory<T, F extends Metrics.Factory<T, F>> implements Metrics.Factory<T, F> {
