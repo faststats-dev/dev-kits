@@ -212,15 +212,21 @@ public abstract class SimpleMetrics implements Metrics {
         }
     }
 
+    private final String javaVersion = System.getProperty("java.version");
+    private final String osArch = System.getProperty("os.arch");
+    private final String osName = System.getProperty("os.name");
+    private final String osVersion = System.getProperty("os.version");
+    private final int coreCount = Runtime.getRuntime().availableProcessors();
+
     protected JsonObject createData() {
         var data = new JsonObject();
         var charts = new JsonObject();
 
-        charts.addProperty("java_version", System.getProperty("java.version"));
-        charts.addProperty("os_arch", System.getProperty("os.arch"));
-        charts.addProperty("os_name", System.getProperty("os.name"));
-        charts.addProperty("os_version", System.getProperty("os.version"));
-        charts.addProperty("core_count", Runtime.getRuntime().availableProcessors());
+        charts.addProperty("java_version", javaVersion);
+        charts.addProperty("os_arch", osArch);
+        charts.addProperty("os_name", osName);
+        charts.addProperty("os_version", osVersion);
+        charts.addProperty("core_count", coreCount);
 
         this.charts.forEach(chart -> {
             try {
