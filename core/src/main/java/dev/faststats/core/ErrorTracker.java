@@ -79,9 +79,31 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
      * If the class loader is {@code null}, the tracker will track all errors.
      *
      * @param loader the class loader
+     * @throws IllegalStateException if the error context is already attached
      * @since 0.10.0
      */
-    void attachErrorContext(@Nullable ClassLoader loader);
+    void attachErrorContext(@Nullable ClassLoader loader) throws IllegalStateException;
+
+    /**
+     * Detaches the error context from the tracker.
+     * <p>
+     * This restores the original uncaught exception handler that was in place before
+     * {@link #attachErrorContext(ClassLoader)} was called.
+     * <p>
+     * This should be called during shutdown to prevent {@link BootstrapMethodError}
+     * when the provider's JAR file is closed.
+     *
+     * @since 0.13.0
+     */
+    void detachErrorContext();
+
+    /**
+     * Returns whether an error context is attached.
+     *
+     * @return whether an error context is attached
+     * @since 0.13.0
+     */
+    boolean isContextAttached();
 
     /**
      * Sets the error event handler which will be called when an error is tracked automatically.
