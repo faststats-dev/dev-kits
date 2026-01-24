@@ -6,7 +6,6 @@ module dev.faststats.minestom {
 
     requires com.google.gson;
     requires dev.faststats.core;
-    requires java.logging;
     requires net.minestom.server;
     requires org.slf4j;
 
