@@ -311,10 +311,7 @@ final class SimpleErrorTracker implements ErrorTracker {
         try {
             final var clazz = Class.forName(frame.getClassName(), false, loader);
             return isSameClassLoader(clazz.getClassLoader(), loader);
-        } catch (final ClassNotFoundException e) {
-            return false;
         } catch (final Throwable t) {
-            t.printStackTrace(System.err);
             return false;
         }
     }
