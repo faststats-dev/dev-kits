@@ -70,6 +70,15 @@ final class SimpleErrorTracker implements ErrorTracker {
         reports.clear();
     }
 
+    public boolean needsFlushing() {
+        if (!reports.isEmpty()) return false;
+        for (final var value : collected.values()) {
+            if (value > 0) return false;
+        }
+        return true;
+        
+    }
+
     @Override
     public synchronized void attachErrorContext(@Nullable final ClassLoader loader) throws IllegalStateException {
         if (originalHandler != null) throw new IllegalStateException("Error context already attached");
