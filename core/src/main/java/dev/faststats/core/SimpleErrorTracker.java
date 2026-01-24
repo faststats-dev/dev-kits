@@ -8,6 +8,7 @@ import dev.faststats.core.concurrent.TrackingThreadFactory;
 import dev.faststats.core.concurrent.TrackingThreadPoolExecutor;
 import org.jspecify.annotations.Nullable;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,49 +30,50 @@ final class SimpleErrorTracker implements ErrorTracker {
     private final TrackingThreadFactory threadFactory = new SimpleTrackingThreadFactory(this);
     private final TrackingThreadPoolExecutor threadPoolExecutor = new SimpleTrackingThreadPoolExecutor(this);
 
-    private @Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent = null;
+    private volatile @Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent = null;
+    private volatile @Nullable UncaughtExceptionHandler originalHandler = null;
 
     @Override
-    public void trackError(String message) {
+    public void trackError(final String message) {
         trackError(new RuntimeException(message));
     }
 
     @Override
-    public void trackError(Throwable error) {
-        var compile = compile(error, null);
-        var hashed = hash(compile);
+    public void trackError(final Throwable error) {
+        final var compile = compile(error, null);
+        final var hashed = hash(compile);
         if (collected.compute(hashed, (k, v) -> {
             return v == null ? 1 : v + 1;
         }) > 1) return;
         reports.put(hashed, compile);
     }
 
-    private String hash(JsonObject report) {
-        long[] hash = MurmurHash3.hash(report.toString());
+    private String hash(final JsonObject report) {
+        final long[] hash = MurmurHash3.hash(report.toString());
         return Long.toHexString(hash[0]) + Long.toHexString(hash[1]);
     }
 
     // todo: cleanup this absolute mess
-    private JsonObject compile(Throwable error, @Nullable List<String> suppress) {
-        var elements = error.getStackTrace();
-        var stack = collapseStackTrace(elements);
-        var list = new ArrayList<>(stack);
+    private JsonObject compile(final Throwable error, @Nullable final List<String> suppress) {
+        final var elements = error.getStackTrace();
+        final var stack = collapseStackTrace(elements);
+        final var list = new ArrayList<>(stack);
         if (suppress != null) list.removeAll(suppress);
 
-        var traces = Math.min(list.size(), stackTraceLimit);
+        final var traces = Math.min(list.size(), stackTraceLimit);
 
-        var report = new JsonObject();
-        var stacktrace = new JsonArray(traces);
+        final var report = new JsonObject();
+        final var stacktrace = new JsonArray(traces);
 
         for (var i = 0; i < traces; i++) {
-            var string = list.get(i);
+            final var string = list.get(i);
             if (string.length() <= stackTraceLength) stacktrace.add(string);
             else stacktrace.add(string.substring(0, stackTraceLength) + "...");
         }
         if (traces > 0 && traces < list.size()) {
             stacktrace.add("and " + (list.size() - traces) + " more...");
         } else {
-            var i = elements.length - list.size();
+            final var i = elements.length - list.size();
             if (i > 0) stacktrace.add("Omitted " + i + " duplicate stack frame" + (i == 1 ? "" : "s"));
         }
 
@@ -85,7 +87,7 @@ final class SimpleErrorTracker implements ErrorTracker {
             report.add("stack", stacktrace);
         }
         if (error.getCause() != null) {
-            var toSuppress = new ArrayList<>(stack);
+            final var toSuppress = new ArrayList<>(stack);
             if (suppress != null) toSuppress.addAll(suppress);
             report.add("cause", compile(error.getCause(), toSuppress));
         }
@@ -93,19 +95,19 @@ final class SimpleErrorTracker implements ErrorTracker {
         return report;
     }
 
-    public static List<String> collapseStackTrace(StackTraceElement[] trace) {
-        var lines = Arrays.stream(trace)
+    public static List<String> collapseStackTrace(final StackTraceElement[] trace) {
+        final var lines = Arrays.stream(trace)
                 .map(StackTraceElement::toString)
                 .toList();
 
         return collapseRepeatingPattern(lines);
     }
 
-    public static List<String> collapseRepeatingPattern(List<String> lines) {
+    public static List<String> collapseRepeatingPattern(final List<String> lines) {
         // First, collapse consecutive duplicate lines
-        var deduplicated = collapseConsecutiveDuplicates(lines);
+        final var deduplicated = collapseConsecutiveDuplicates(lines);
 
-        var n = deduplicated.size();
+        final var n = deduplicated.size();
 
         for (var cycleLen = 1; cycleLen <= n / 2; cycleLen++) {
             var isPattern = true;
@@ -129,13 +131,13 @@ final class SimpleErrorTracker implements ErrorTracker {
         return deduplicated;
     }
 
-    private static List<String> collapseConsecutiveDuplicates(List<String> lines) {
+    private static List<String> collapseConsecutiveDuplicates(final List<String> lines) {
         if (lines.isEmpty()) return lines;
 
-        var result = new ArrayList<String>();
+        final var result = new ArrayList<String>();
         String previous = null;
 
-        for (var line : lines) {
+        for (final var line : lines) {
             if (!line.equals(previous)) {
                 result.add(line);
                 previous = line;
@@ -168,25 +170,25 @@ final class SimpleErrorTracker implements ErrorTracker {
         message = message.replaceAll(IPV4_PATTERN, "[IP hidden]");
         message = message.replaceAll(IPV6_PATTERN, "[IP hidden]");
         message = message.replaceAll(USER_HOME_PATH_PATTERN, "$1$2$3[username hidden]");
-        var username = System.getProperty("user.name");
+        final var username = System.getProperty("user.name");
         if (username != null) message = message.replace(username, "[username hidden]");
         return message;
     }
 
     public JsonArray getData() {
-        var report = new JsonArray(reports.size());
+        final var report = new JsonArray(reports.size());
 
         reports.forEach((hash, object) -> {
-            var copy = object.deepCopy();
+            final var copy = object.deepCopy();
             copy.addProperty("hash", hash);
-            var count = collected.getOrDefault(hash, 1);
+            final var count = collected.getOrDefault(hash, 1);
             if (count > 1) copy.addProperty("count", count);
             report.add(copy);
         });
 
         collected.forEach((hash, count) -> {
             if (count <= 0 || reports.containsKey(hash)) return;
-            var entry = new JsonObject();
+            final var entry = new JsonObject();
 
             entry.addProperty("hash", hash);
             if (count > 1) entry.addProperty("count", count);
@@ -203,23 +205,42 @@ final class SimpleErrorTracker implements ErrorTracker {
     }
 
     @Override
-    public void attachErrorContext(@Nullable ClassLoader loader) {
-        var handler = Thread.getDefaultUncaughtExceptionHandler();
+    public synchronized void attachErrorContext(@Nullable final ClassLoader loader) throws IllegalStateException {
+        if (originalHandler != null) throw new IllegalStateException("Error context already attached");
+        originalHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
+            final var handler = originalHandler;
             if (handler != null) handler.uncaughtException(thread, error);
-            if (loader != null && !isSameLoader(loader, error)) return;
-            if (errorEvent != null) errorEvent.accept(loader, error);
-            trackError(error);
+            try {
+                if (loader != null && !isSameLoader(loader, error)) return;
+                final var event = errorEvent;
+                if (event != null) event.accept(loader, error);
+                trackError(error);
+            } catch (final Throwable t) {
+                trackError(t);
+            }
         });
     }
 
     @Override
-    public void setContextErrorHandler(@Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent) {
+    public synchronized void detachErrorContext() {
+        if (originalHandler == null) return;
+        Thread.setDefaultUncaughtExceptionHandler(originalHandler);
+        originalHandler = null;
+    }
+
+    @Override
+    public synchronized boolean isContextAttached() {
+        return originalHandler != null;
+    }
+
+    @Override
+    public synchronized void setContextErrorHandler(@Nullable final BiConsumer<@Nullable ClassLoader, Throwable> errorEvent) {
         this.errorEvent = errorEvent;
     }
 
     @Override
-    public Optional<BiConsumer<@Nullable ClassLoader, Throwable>> getContextErrorHandler() {
+    public synchronized Optional<BiConsumer<@Nullable ClassLoader, Throwable>> getContextErrorHandler() {
         return Optional.ofNullable(errorEvent);
     }
 
@@ -244,20 +265,20 @@ final class SimpleErrorTracker implements ErrorTracker {
     }
 
     private boolean isSameLoader(final ClassLoader loader, final Throwable error) {
-        var stackTrace = error.getStackTrace();
+        final var stackTrace = error.getStackTrace();
         if (stackTrace == null || stackTrace.length == 0) {
             return false;
         }
 
-        var firstNonLibraryIndex = findFirstNonLibraryFrameIndex(stackTrace);
+        final var firstNonLibraryIndex = findFirstNonLibraryFrameIndex(stackTrace);
         if (firstNonLibraryIndex == -1) {
             return false;
         }
 
-        var framesToCheck = Math.min(5, stackTrace.length - firstNonLibraryIndex);
+        final var framesToCheck = Math.min(5, stackTrace.length - firstNonLibraryIndex);
 
         for (var i = 0; i < framesToCheck; i++) {
-            var frame = stackTrace[firstNonLibraryIndex + i];
+            final var frame = stackTrace[firstNonLibraryIndex + i];
             if (isLibraryClass(frame.getClassName())) {
                 continue;
             }
@@ -288,9 +309,12 @@ final class SimpleErrorTracker implements ErrorTracker {
 
     private boolean isFromLoader(final StackTraceElement frame, final ClassLoader loader) {
         try {
-            var clazz = Class.forName(frame.getClassName(), false, loader);
+            final var clazz = Class.forName(frame.getClassName(), false, loader);
             return isSameClassLoader(clazz.getClassLoader(), loader);
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
+            return false;
+        } catch (final Throwable t) {
+            t.printStackTrace(System.err);
             return false;
         }
     }
