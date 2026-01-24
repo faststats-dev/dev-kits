@@ -269,23 +269,19 @@ public abstract class SimpleMetrics implements Metrics {
         return config;
     }
 
-    protected boolean isDebug() {
-        return debug;
-    }
-
     @Contract(mutates = "param1")
     protected abstract void appendDefaultData(JsonObject charts);
 
     protected void error(final String message, @Nullable final Throwable throwable) {
-        if (isDebug()) printError("[" + getClass().getName() + "]: " + message, throwable);
+        if (debug) printError("[" + getClass().getName() + "]: " + message, throwable);
     }
 
     protected void warn(final String message) {
-        if (isDebug()) printWarning("[" + getClass().getName() + "]: " + message);
+        if (debug) printWarning("[" + getClass().getName() + "]: " + message);
     }
 
     protected void info(final String message) {
-        if (isDebug()) printInfo("[" + getClass().getName() + "]: " + message);
+        if (debug) printInfo("[" + getClass().getName() + "]: " + message);
     }
 
     protected abstract void printError(String message, @Nullable Throwable throwable);
