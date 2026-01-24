@@ -18,16 +18,26 @@ import java.util.logging.Logger;
 final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     private final Logger logger;
     private final Server server;
-    private final Plugin plugin;
+
+    private final String pluginVersion;
+    private final String minecraftVersion;
+    private final String serverType;
 
     @Async.Schedule
     @Contract(mutates = "io")
+    @SuppressWarnings({"deprecation", "Convert2MethodRef"})
     private BukkitMetricsImpl(Factory factory, Plugin plugin, Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
         this.server = plugin.getServer();
-        this.plugin = plugin;
+
+        this.pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
+                .orElseGet(() -> plugin.getDescription().getVersion());
+        this.minecraftVersion = tryOrEmpty(() -> server.getMinecraftVersion())
+                .or(() -> tryOrEmpty(() -> server.getBukkitVersion().split("-", 2)[0]))
+                .orElseGet(() -> server.getVersion().split("\\(MC: |\\)", 3)[1]);
+        this.serverType = server.getName();
 
         startSubmitting();
     }
@@ -52,20 +62,21 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     @Override
-    @SuppressWarnings({"deprecation", "Convert2MethodRef"})
     protected void appendDefaultData(JsonObject charts) {
-        var pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
-                .orElseGet(() -> plugin.getDescription().getVersion());
-
-        var minecraftVersion = tryOrEmpty(() -> server.getMinecraftVersion())
-                .or(() -> tryOrEmpty(() -> server.getBukkitVersion().split("-", 2)[0]))
-                .orElseGet(() -> server.getVersion().split("\\(MC: |\\)", 3)[1]);
-
         charts.addProperty("minecraft_version", minecraftVersion);
         charts.addProperty("online_mode", checkOnlineMode());
-        charts.addProperty("player_count", server.getOnlinePlayers().size());
+        charts.addProperty("player_count", getPlayerCount());
         charts.addProperty("plugin_version", pluginVersion);
-        charts.addProperty("server_type", server.getName());
+        charts.addProperty("server_type", serverType);
+    }
+
+    private int getPlayerCount() {
+        try {
+            return server.getOnlinePlayers().size();
+        } catch (Throwable t) {
+            error("Failed to get player count", t);
+            return 0;
+        }
     }
 
     @Override
