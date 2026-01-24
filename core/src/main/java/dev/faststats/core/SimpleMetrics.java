@@ -60,15 +60,6 @@ public abstract class SimpleMetrics implements Metrics {
         this.token = factory.token;
         this.tracker = config.errorTracking ? factory.tracker : null;
         this.url = factory.url;
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                shutdown();
-                submitAsync().join();
-            } catch (Exception e) {
-                error("Failed to submit metrics on shutdown", e);
-            }
-        }, "metrics-shutdown-thread " + getClass().getName()));
     }
 
     @Contract(mutates = "io")
