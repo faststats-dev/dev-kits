@@ -151,20 +151,23 @@ public abstract class SimpleMetrics implements Metrics {
         });
 
         info("Starting metrics submission");
-        executor.scheduleAtFixedRate(() -> {
-            try {
-                submit();
-            } catch (final Throwable t) {
-                error("Failed to submit metrics", t);
-            }
-        }, Math.max(0, initialDelay), Math.max(1000, period), unit);
+        executor.scheduleAtFixedRate(this::submit, Math.max(0, initialDelay), Math.max(1000, period), unit);
     }
 
     protected boolean isSubmitting() {
         return executor != null && !executor.isShutdown();
     }
 
-    protected boolean submit() throws IOException {
+    public boolean submit() {
+        try {
+            return submitNow();
+        } catch (final Throwable t) {
+            error("Failed to submit metrics", t);
+            return false;
+        }
+    }
+
+    private boolean submitNow() throws IOException {
         final var data = createData().toString();
         final var bytes = data.getBytes(UTF_8);
 

@@ -35,11 +35,6 @@ public class MockMetrics extends SimpleMetrics {
     }
 
     @Override
-    public boolean submit() throws IOException {
-        return super.submit();
-    }
-
-    @Override
     public JsonObject createData() {
         return super.createData();
     }
