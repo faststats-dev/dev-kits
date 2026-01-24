@@ -67,7 +67,14 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     @VisibleForTesting
-    protected SimpleMetrics(final Config config, final Set<Chart<?>> charts, @Token final String token, @Nullable final ErrorTracker tracker, final URI url, final boolean debug) {
+    protected SimpleMetrics(
+            final Config config,
+            final Set<Chart<?>> charts,
+            @Token final String token,
+            @Nullable final ErrorTracker tracker,
+            final URI url,
+            final boolean debug
+    ) {
         if (!token.matches(Token.PATTERN)) {
             throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
         }
