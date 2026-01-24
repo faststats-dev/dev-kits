@@ -71,12 +71,11 @@ final class SimpleErrorTracker implements ErrorTracker {
     }
 
     public boolean needsFlushing() {
-        if (!reports.isEmpty()) return false;
+        if (!reports.isEmpty()) return true;
         for (final var value : collected.values()) {
-            if (value > 0) return false;
+            if (value > 0) return true;
         }
-        return true;
-        
+        return false;
     }
 
     @Override
