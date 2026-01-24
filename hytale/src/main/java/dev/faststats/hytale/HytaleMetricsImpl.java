@@ -18,7 +18,7 @@ final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private HytaleMetricsImpl(Factory factory, HytaleLogger logger, Path config) throws IllegalStateException {
+    private HytaleMetricsImpl(final Factory factory, final HytaleLogger logger, final Path config) throws IllegalStateException {
         super(factory, config);
         this.logger = logger;
 
@@ -26,32 +26,32 @@ final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
         charts.addProperty("server_version", HytaleServer.get().getServerName());
         charts.addProperty("player_count", Universe.get().getPlayerCount());
         charts.addProperty("server_type", "Hytale");
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.atSevere().log(message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.atInfo().log(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.atWarning().log(message);
     }
 
     static final class Factory extends SimpleMetrics.Factory<JavaPlugin, HytaleMetrics.Factory> implements HytaleMetrics.Factory {
         @Override
-        public Metrics create(JavaPlugin plugin) throws IllegalStateException {
-            var mods = plugin.getDataDirectory().toAbsolutePath().getParent();
-            var config = mods.resolve("faststats").resolve("config.properties");
+        public Metrics create(final JavaPlugin plugin) throws IllegalStateException {
+            final var mods = plugin.getDataDirectory().toAbsolutePath().getParent();
+            final var config = mods.resolve("faststats").resolve("config.properties");
             return new HytaleMetricsImpl(this, plugin.getLogger(), config);
         }
     }

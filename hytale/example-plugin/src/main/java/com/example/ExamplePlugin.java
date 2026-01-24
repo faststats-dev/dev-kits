@@ -37,7 +37,7 @@ public class ExamplePlugin extends JavaPlugin {
             .token("YOUR_TOKEN_HERE") // required -> token can be found in the settings of your project
             .create(this);
 
-    public ExamplePlugin(JavaPluginInit init) {
+    public ExamplePlugin(final JavaPluginInit init) {
         super(init);
     }
 
@@ -50,7 +50,7 @@ public class ExamplePlugin extends JavaPlugin {
         try {
             // Do something that might throw an error
             throw new RuntimeException("Something went wrong!");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
         }
     }

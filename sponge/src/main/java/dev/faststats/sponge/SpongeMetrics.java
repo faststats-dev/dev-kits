@@ -23,7 +23,7 @@ public sealed interface SpongeMetrics extends Metrics permits SpongeMetricsImpl 
          * @since 0.12.0
          */
         @Inject
-        private Factory(Logger logger, @ConfigDir(sharedRoot = true) Path dataDirectory) {
+        private Factory(final Logger logger, @ConfigDir(sharedRoot = true) final Path dataDirectory) {
             super(logger, dataDirectory);
         }
     }

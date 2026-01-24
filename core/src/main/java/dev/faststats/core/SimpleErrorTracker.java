@@ -49,7 +49,7 @@ final class SimpleErrorTracker implements ErrorTracker {
     }
 
     private String hash(final JsonObject report) {
-        final long[] hash = MurmurHash3.hash(report.toString());
+        final var hash = MurmurHash3.hash(report.toString());
         return Long.toHexString(hash[0]) + Long.toHexString(hash[1]);
     }
 

@@ -20,7 +20,7 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private BungeeMetricsImpl(Factory factory, Plugin plugin, Path config) throws IllegalStateException {
+    private BungeeMetricsImpl(final Factory factory, final Plugin plugin, final Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -31,7 +31,7 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
         charts.addProperty("online_mode", server.getConfig().isOnlineMode());
         charts.addProperty("player_count", server.getOnlineCount());
         charts.addProperty("plugin_version", plugin.getDescription().getVersion());
@@ -40,25 +40,25 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.log(Level.SEVERE, message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.info(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.warning(message);
     }
 
     static final class Factory extends SimpleMetrics.Factory<Plugin, BungeeMetrics.Factory> implements BungeeMetrics.Factory {
         @Override
-        public Metrics create(Plugin plugin) throws IllegalStateException {
-            var dataFolder = plugin.getProxy().getPluginsFolder().toPath().resolve("faststats");
-            var config = dataFolder.resolve("config.properties");
+        public Metrics create(final Plugin plugin) throws IllegalStateException {
+            final var dataFolder = plugin.getProxy().getPluginsFolder().toPath().resolve("faststats");
+            final var config = dataFolder.resolve("config.properties");
             return new BungeeMetricsImpl(this, plugin, config);
         }
     }

@@ -31,7 +31,7 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
      */
     @Contract(value = " -> new")
     static ErrorTracker contextAware() {
-        var tracker = new SimpleErrorTracker();
+        final var tracker = new SimpleErrorTracker();
         tracker.attachErrorContext(ErrorTracker.class.getClassLoader());
         return tracker;
     }

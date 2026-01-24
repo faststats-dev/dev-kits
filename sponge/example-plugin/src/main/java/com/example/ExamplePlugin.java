@@ -62,7 +62,7 @@ public class ExamplePlugin {
         try {
             // Do something that might throw an error
             throw new RuntimeException("Something went wrong!");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
         }
     }

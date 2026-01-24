@@ -25,7 +25,7 @@ public sealed interface VelocityMetrics extends Metrics permits VelocityMetricsI
          * @since 0.1.0
          */
         @Inject
-        private Factory(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+        private Factory(final ProxyServer server, final Logger logger, @DataDirectory final Path dataDirectory) {
             super(server, logger, dataDirectory);
         }
     }

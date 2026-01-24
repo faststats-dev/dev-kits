@@ -14,23 +14,23 @@ import java.util.UUID;
 
 @NullMarked
 public class MockMetrics extends SimpleMetrics {
-    public MockMetrics(UUID serverId, @Token String token, @Nullable ErrorTracker tracker, boolean debug) {
+    public MockMetrics(final UUID serverId, @Token final String token, @Nullable final ErrorTracker tracker, final boolean debug) {
         super(new Config(serverId, true, debug, true, true, false, false), Set.of(), token, tracker, URI.create("http://localhost:5000/v1/collect"), debug);
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         System.err.println(message);
         if (throwable != null) throwable.printStackTrace(System.err);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         System.out.println(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         System.out.println(message);
     }
 
@@ -45,6 +45,6 @@ public class MockMetrics extends SimpleMetrics {
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
     }
 }

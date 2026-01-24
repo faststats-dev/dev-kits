@@ -37,10 +37,10 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
     @Async.Schedule
     @Contract(mutates = "io")
     private SpongeMetricsImpl(
-            Factory factory,
-            Logger logger,
-            PluginContainer plugin,
-            Path config
+            final Factory factory,
+            final Logger logger,
+            final PluginContainer plugin,
+            final Path config
     ) throws IllegalStateException {
         super(factory, SimpleMetrics.Config.read(config, COMMENT, true, Sponge.metricsConfigManager()
                 .effectiveCollectionState(plugin).asBoolean()));
@@ -62,7 +62,7 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
         charts.addProperty("online_mode", Sponge.server().isOnlineModeEnabled());
         charts.addProperty("player_count", Sponge.server().onlinePlayers().size());
         charts.addProperty("plugin_version", plugin.metadata().version().toString());
@@ -71,17 +71,17 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.error(message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.info(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.warn(message);
     }
 
@@ -89,14 +89,14 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
         protected final Logger logger;
         protected final Path dataDirectory;
 
-        public Factory(Logger logger, Path dataDirectory) {
+        public Factory(final Logger logger, final Path dataDirectory) {
             this.logger = logger;
             this.dataDirectory = dataDirectory;
         }
 
         @Override
-        public Metrics create(PluginContainer plugin) throws IllegalStateException, IllegalArgumentException {
-            var faststats = dataDirectory.resolve("faststats");
+        public Metrics create(final PluginContainer plugin) throws IllegalStateException, IllegalArgumentException {
+            final var faststats = dataDirectory.resolve("faststats");
             return new SpongeMetricsImpl(this, logger, plugin, faststats.resolve("config.properties"));
         }
     }

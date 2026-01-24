@@ -8,18 +8,18 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 
 final class ArrayChart<T> extends SimpleChart<T[]> {
-    public ArrayChart(@ChartId String id, Callable<T @Nullable []> callable) throws IllegalArgumentException {
+    public ArrayChart(@ChartId final String id, final Callable<T @Nullable []> callable) throws IllegalArgumentException {
         super(id, callable);
     }
 
     @Override
     public Optional<JsonElement> getData() throws Exception {
         return compute().map(data -> {
-            var elements = new JsonArray(data.length);
-            for (var d : data) {
+            final var elements = new JsonArray(data.length);
+            for (final var d : data) {
                 switch (d) {
-                    case Boolean b -> elements.add(b);
-                    case Number n -> elements.add(n);
+                    case final Boolean b -> elements.add(b);
+                    case final Number n -> elements.add(n);
                     default -> elements.add(d.toString());
                 }
             }

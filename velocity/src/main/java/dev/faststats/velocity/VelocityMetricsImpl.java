@@ -21,11 +21,11 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     @Async.Schedule
     @Contract(mutates = "io")
     private VelocityMetricsImpl(
-            Factory factory,
-            Logger logger,
-            ProxyServer server,
-            Path config,
-            PluginContainer plugin
+            final Factory factory,
+            final Logger logger,
+            final ProxyServer server,
+            final Path config,
+            final PluginContainer plugin
     ) throws IllegalStateException {
         super(factory, config);
 
@@ -37,8 +37,8 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
-        var pluginVersion = plugin.getDescription().getVersion().orElse("unknown");
+    protected void appendDefaultData(final JsonObject charts) {
+        final var pluginVersion = plugin.getDescription().getVersion().orElse("unknown");
         charts.addProperty("online_mode", server.getConfiguration().isOnlineMode());
         charts.addProperty("player_count", server.getPlayerCount());
         charts.addProperty("plugin_version", pluginVersion);
@@ -47,17 +47,17 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.error(message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.info(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.warn(message);
     }
 
@@ -66,7 +66,7 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
         protected final Path dataDirectory;
         protected final ProxyServer server;
 
-        public Factory(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+        public Factory(final ProxyServer server, final Logger logger, @DataDirectory final Path dataDirectory) {
             this.logger = logger;
             this.dataDirectory = dataDirectory;
             this.server = server;
@@ -85,9 +85,9 @@ final class VelocityMetricsImpl extends SimpleMetrics implements VelocityMetrics
          * @since 0.1.0
          */
         @Override
-        public Metrics create(Object plugin) throws IllegalStateException, IllegalArgumentException {
-            var faststats = dataDirectory.resolveSibling("faststats");
-            var container = server.getPluginManager().ensurePluginContainer(plugin);
+        public Metrics create(final Object plugin) throws IllegalStateException, IllegalArgumentException {
+            final var faststats = dataDirectory.resolveSibling("faststats");
+            final var container = server.getPluginManager().ensurePluginContainer(plugin);
             return new VelocityMetricsImpl(this, logger, server, faststats.resolve("config.properties"), container);
         }
     }

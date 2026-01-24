@@ -8,17 +8,17 @@ final class WrappedTrackingThreadFactory implements ThreadFactory {
     private final ErrorTracker tracker;
     private final ThreadFactory factory;
 
-    public WrappedTrackingThreadFactory(ErrorTracker tracker, ThreadFactory factory) {
+    public WrappedTrackingThreadFactory(final ErrorTracker tracker, final ThreadFactory factory) {
         this.tracker = tracker;
         this.factory = factory;
     }
 
     @Override
-    public Thread newThread(Runnable runnable) {
+    public Thread newThread(final Runnable runnable) {
         return factory.newThread(tracker.base().tracked(runnable));
     }
 
-    public static ThreadFactory wrap(ErrorTracker tracker, ThreadFactory factory) {
+    public static ThreadFactory wrap(final ErrorTracker tracker, final ThreadFactory factory) {
         return factory instanceof TrackingThreadFactory || factory instanceof WrappedTrackingThreadFactory
                 ? factory : new WrappedTrackingThreadFactory(tracker, factory);
     }

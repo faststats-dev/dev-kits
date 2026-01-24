@@ -11,20 +11,20 @@ final class SimpleTrackingThreadFactory implements TrackingThreadFactory {
     private final String namePrefix;
     private final ErrorTracker tracker;
 
-    public SimpleTrackingThreadFactory(ErrorTracker tracker) {
+    public SimpleTrackingThreadFactory(final ErrorTracker tracker) {
         this.tracker = tracker;
         this.group = Thread.currentThread().getThreadGroup();
         this.namePrefix = "tracking-pool-" + poolNumber.getAndIncrement() + "-thread-";
     }
 
     @Override
-    public Thread newThread(Runnable runnable) {
+    public Thread newThread(final Runnable runnable) {
         return newThread(namePrefix + threadNumber.getAndIncrement(), runnable);
     }
 
     @Override
-    public Thread newThread(String name, Runnable runnable) {
-        var thread = new Thread(this.group, tracker.base().tracked(runnable), name, 0L);
+    public Thread newThread(final String name, final Runnable runnable) {
+        final var thread = new Thread(this.group, tracker.base().tracked(runnable), name, 0L);
         if (thread.isDaemon()) thread.setDaemon(false);
         if (thread.getPriority() != 5) thread.setPriority(5);
         return thread;

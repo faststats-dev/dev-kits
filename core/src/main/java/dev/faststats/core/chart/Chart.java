@@ -60,7 +60,7 @@ public interface Chart<T> {
      * @since 0.5.0
      */
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<String[]> stringArray(@ChartId String id, Callable<String @Nullable []> callable) throws IllegalArgumentException {
+    static Chart<String[]> stringArray(@ChartId final String id, final Callable<String @Nullable []> callable) throws IllegalArgumentException {
         return new ArrayChart<>(id, callable);
     }
 
@@ -76,7 +76,7 @@ public interface Chart<T> {
      * @since 0.5.0
      */
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<Boolean[]> booleanArray(@ChartId String id, Callable<Boolean @Nullable []> callable) throws IllegalArgumentException {
+    static Chart<Boolean[]> booleanArray(@ChartId final String id, final Callable<Boolean @Nullable []> callable) throws IllegalArgumentException {
         return new ArrayChart<>(id, callable);
     }
 
@@ -92,7 +92,7 @@ public interface Chart<T> {
      * @since 0.5.0
      */
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<Number[]> numberArray(@ChartId String id, Callable<Number @Nullable []> callable) throws IllegalArgumentException {
+    static Chart<Number[]> numberArray(@ChartId final String id, final Callable<Number @Nullable []> callable) throws IllegalArgumentException {
         return new ArrayChart<>(id, callable);
     }
 
@@ -108,7 +108,7 @@ public interface Chart<T> {
      * @since 0.1.0
      */
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<Boolean> bool(@ChartId String id, Callable<@Nullable Boolean> callable) throws IllegalArgumentException {
+    static Chart<Boolean> bool(@ChartId final String id, final Callable<@Nullable Boolean> callable) throws IllegalArgumentException {
         return new SingleValueChart<>(id, callable);
     }
 
@@ -124,7 +124,7 @@ public interface Chart<T> {
      * @since 0.1.0
      */
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<String> string(@ChartId String id, Callable<@Nullable String> callable) throws IllegalArgumentException {
+    static Chart<String> string(@ChartId final String id, final Callable<@Nullable String> callable) throws IllegalArgumentException {
         return new SingleValueChart<>(id, callable);
     }
 
@@ -140,7 +140,7 @@ public interface Chart<T> {
      * @since 0.1.0
      */
     @Contract(value = "_, _ -> new", pure = true)
-    static Chart<Number> number(@ChartId String id, Callable<@Nullable Number> callable) throws IllegalArgumentException {
+    static Chart<Number> number(@ChartId final String id, final Callable<@Nullable Number> callable) throws IllegalArgumentException {
         return new SingleValueChart<>(id, callable);
     }
 }

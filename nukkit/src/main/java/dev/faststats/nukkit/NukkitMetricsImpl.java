@@ -21,7 +21,7 @@ final class NukkitMetricsImpl extends SimpleMetrics implements NukkitMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private NukkitMetricsImpl(Factory factory, PluginBase plugin, Path config) throws IllegalStateException {
+    private NukkitMetricsImpl(final Factory factory, final PluginBase plugin, final Path config) throws IllegalStateException {
         super(factory, config);
 
         this.logger = plugin.getLogger();
@@ -32,7 +32,7 @@ final class NukkitMetricsImpl extends SimpleMetrics implements NukkitMetrics {
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
         charts.addProperty("minecraft_version", server.getVersion());
         charts.addProperty("online_mode", server.xboxAuth);
         charts.addProperty("player_count", server.getOnlinePlayersCount());
@@ -41,33 +41,33 @@ final class NukkitMetricsImpl extends SimpleMetrics implements NukkitMetrics {
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.error(message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.info(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.warning(message);
     }
 
-    private <T> Optional<T> tryOrEmpty(Supplier<T> supplier) {
+    private <T> Optional<T> tryOrEmpty(final Supplier<T> supplier) {
         try {
             return Optional.of(supplier.get());
-        } catch (NoSuchMethodError | Exception e) {
+        } catch (final NoSuchMethodError | Exception e) {
             return Optional.empty();
         }
     }
 
     static final class Factory extends SimpleMetrics.Factory<PluginBase, NukkitMetrics.Factory> implements NukkitMetrics.Factory {
         @Override
-        public Metrics create(PluginBase plugin) throws IllegalStateException {
-            var dataFolder = Path.of(plugin.getServer().getPluginPath(), "faststats");
-            var config = dataFolder.resolve("config.properties");
+        public Metrics create(final PluginBase plugin) throws IllegalStateException {
+            final var dataFolder = Path.of(plugin.getServer().getPluginPath(), "faststats");
+            final var config = dataFolder.resolve("config.properties");
             return new NukkitMetricsImpl(this, plugin, config);
         }
     }

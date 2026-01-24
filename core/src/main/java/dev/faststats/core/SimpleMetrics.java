@@ -50,7 +50,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     @Contract(mutates = "io")
     @SuppressWarnings("PatternValidation")
-    protected SimpleMetrics(Factory<?, ?> factory, Config config) throws IllegalStateException {
+    protected SimpleMetrics(final Factory<?, ?> factory, final Config config) throws IllegalStateException {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
         this.config = config;
@@ -62,12 +62,12 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     @Contract(mutates = "io")
-    protected SimpleMetrics(Factory<?, ?> factory, Path config) throws IllegalStateException {
+    protected SimpleMetrics(final Factory<?, ?> factory, final Path config) throws IllegalStateException {
         this(factory, Config.read(config));
     }
 
     @VisibleForTesting
-    protected SimpleMetrics(Config config, Set<Chart<?>> charts, @Token String token, @Nullable ErrorTracker tracker, URI url, boolean debug) {
+    protected SimpleMetrics(final Config config, final Set<Chart<?>> charts, @Token final String token, @Nullable final ErrorTracker tracker, final URI url, final boolean debug) {
         if (!token.matches(Token.PATTERN)) {
             throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
         }
@@ -105,7 +105,7 @@ public abstract class SimpleMetrics implements Metrics {
         startSubmitting(getInitialDelay(), getPeriod(), TimeUnit.MILLISECONDS);
     }
 
-    private void startSubmitting(long initialDelay, long period, TimeUnit unit) {
+    private void startSubmitting(final long initialDelay, final long period, final TimeUnit unit) {
         if (Boolean.getBoolean("faststats.first-run")) {
             info("Skipping metrics submission due to first-run flag");
             return;
@@ -114,18 +114,18 @@ public abstract class SimpleMetrics implements Metrics {
         if (config.firstRun) {
 
             var separatorLength = 0;
-            var split = getOnboardingMessage().split("\n");
-            for (var s : split) if (s.length() > separatorLength) separatorLength = s.length();
+            final var split = getOnboardingMessage().split("\n");
+            for (final var s : split) if (s.length() > separatorLength) separatorLength = s.length();
 
             printInfo("-".repeat(separatorLength));
-            for (var s : split) printInfo(s);
+            for (final var s : split) printInfo(s);
             printInfo("-".repeat(separatorLength));
 
             System.setProperty("faststats.first-run", "true");
             if (!config.externallyManaged()) return;
         }
 
-        var enabled = Boolean.parseBoolean(System.getProperty("faststats.enabled", "true"));
+        final var enabled = Boolean.parseBoolean(System.getProperty("faststats.enabled", "true"));
 
         if (!config.enabled() || !enabled) {
             warn("Metrics disabled, not starting submission");
@@ -138,7 +138,7 @@ public abstract class SimpleMetrics implements Metrics {
         }
 
         this.executor = Executors.newSingleThreadScheduledExecutor(runnable -> {
-            var thread = new Thread(runnable, "metrics-submitter");
+            final var thread = new Thread(runnable, "metrics-submitter");
             thread.setDaemon(true);
             return thread;
         });
@@ -147,7 +147,7 @@ public abstract class SimpleMetrics implements Metrics {
         executor.scheduleAtFixedRate(() -> {
             try {
                 submit();
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
                 error("Failed to submit metrics", t);
             }
         }, Math.max(0, initialDelay), Math.max(1000, period), unit);
@@ -158,21 +158,21 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     protected boolean submit() throws IOException {
-        var data = createData().toString();
-        var bytes = data.getBytes(UTF_8);
+        final var data = createData().toString();
+        final var bytes = data.getBytes(UTF_8);
 
         info("Uncompressed data: " + data);
 
-        try (var byteOutput = new ByteArrayOutputStream();
-             var output = new GZIPOutputStream(byteOutput)) {
+        try (final var byteOutput = new ByteArrayOutputStream();
+             final var output = new GZIPOutputStream(byteOutput)) {
 
             output.write(bytes);
             output.finish();
 
-            var compressed = byteOutput.toByteArray();
+            final var compressed = byteOutput.toByteArray();
             info("Compressed size: " + compressed.length + " bytes");
 
-            var request = HttpRequest.newBuilder()
+            final var request = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofByteArray(compressed))
                     .header("Content-Encoding", "gzip")
                     .header("Content-Type", "application/octet-stream")
@@ -184,9 +184,9 @@ public abstract class SimpleMetrics implements Metrics {
 
             info("Sending metrics to: " + url);
             try {
-                var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
-                var statusCode = response.statusCode();
-                var body = response.body();
+                final var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
+                final var statusCode = response.statusCode();
+                final var body = response.body();
 
                 if (statusCode >= 200 && statusCode < 300) {
                     info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
@@ -201,11 +201,11 @@ public abstract class SimpleMetrics implements Metrics {
                 } else {
                     warn("Received unexpected response from metrics server: " + statusCode + " (" + body + ")");
                 }
-            } catch (HttpConnectTimeoutException t) {
+            } catch (final HttpConnectTimeoutException t) {
                 error("Metrics submission timed out after 3 seconds: " + url, null);
-            } catch (ConnectException t) {
+            } catch (final ConnectException t) {
                 error("Failed to connect to metrics server: " + url, null);
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
                 error("Failed to submit metrics", t);
             }
             return false;
@@ -219,8 +219,8 @@ public abstract class SimpleMetrics implements Metrics {
     private final int coreCount = Runtime.getRuntime().availableProcessors();
 
     protected JsonObject createData() {
-        var data = new JsonObject();
-        var charts = new JsonObject();
+        final var data = new JsonObject();
+        final var charts = new JsonObject();
 
         charts.addProperty("java_version", javaVersion);
         charts.addProperty("os_arch", osArch);
@@ -231,7 +231,7 @@ public abstract class SimpleMetrics implements Metrics {
         this.charts.forEach(chart -> {
             try {
                 chart.getData().ifPresent(chartData -> charts.add(chart.getId(), chartData));
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
                 error("Failed to build chart data: " + chart.getId(), t);
                 getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
             }
@@ -239,7 +239,7 @@ public abstract class SimpleMetrics implements Metrics {
 
         try {
             appendDefaultData(charts);
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             error("Failed to append default data", t);
             getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
         }
@@ -276,15 +276,15 @@ public abstract class SimpleMetrics implements Metrics {
     @Contract(mutates = "param1")
     protected abstract void appendDefaultData(JsonObject charts);
 
-    protected void error(String message, @Nullable Throwable throwable) {
+    protected void error(final String message, @Nullable final Throwable throwable) {
         if (isDebug()) printError("[" + getClass().getName() + "]: " + message, throwable);
     }
 
-    protected void warn(String message) {
+    protected void warn(final String message) {
         if (isDebug()) printWarning("[" + getClass().getName() + "]: " + message);
     }
 
-    protected void info(String message) {
+    protected void info(final String message) {
         if (isDebug()) printInfo("[" + getClass().getName() + "]: " + message);
     }
 
@@ -301,7 +301,7 @@ public abstract class SimpleMetrics implements Metrics {
             info("Shutting down metrics submission");
             executor.shutdown();
             submit();
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             error("Failed to submit metrics on shutdown", t);
         } finally {
             executor = null;
@@ -317,28 +317,28 @@ public abstract class SimpleMetrics implements Metrics {
 
         @Override
         @SuppressWarnings("unchecked")
-        public F addChart(Chart<?> chart) throws IllegalArgumentException {
+        public F addChart(final Chart<?> chart) throws IllegalArgumentException {
             if (!charts.add(chart)) throw new IllegalArgumentException("Chart already added: " + chart.getId());
             return (F) this;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public F errorTracker(ErrorTracker tracker) {
+        public F errorTracker(final ErrorTracker tracker) {
             this.tracker = tracker;
             return (F) this;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public F debug(boolean enabled) {
+        public F debug(final boolean enabled) {
             this.debug = enabled;
             return (F) this;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public F token(@Token String token) throws IllegalArgumentException {
+        public F token(@Token final String token) throws IllegalArgumentException {
             if (!token.matches(Token.PATTERN)) {
                 throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
             }
@@ -348,7 +348,7 @@ public abstract class SimpleMetrics implements Metrics {
 
         @Override
         @SuppressWarnings("unchecked")
-        public F url(URI url) {
+        public F url(final URI url) {
             this.url = url;
             return (F) this;
         }
@@ -381,23 +381,23 @@ public abstract class SimpleMetrics implements Metrics {
                 """;
 
         @Contract(mutates = "io")
-        public static Config read(Path file) throws RuntimeException {
+        public static Config read(final Path file) throws RuntimeException {
             return read(file, DEFAULT_COMMENT, false, false);
         }
 
         @Contract(mutates = "io")
-        public static Config read(Path file, String comment, boolean externallyManaged, boolean externallyEnabled) throws RuntimeException {
-            var properties = readOrEmpty(file);
-            var firstRun = properties.isEmpty();
-            var saveConfig = new AtomicBoolean(firstRun);
+        public static Config read(final Path file, final String comment, final boolean externallyManaged, final boolean externallyEnabled) throws RuntimeException {
+            final var properties = readOrEmpty(file);
+            final var firstRun = properties.isEmpty();
+            final var saveConfig = new AtomicBoolean(firstRun);
 
-            var serverId = properties.map(object -> object.getProperty("serverId")).map(string -> {
+            final var serverId = properties.map(object -> object.getProperty("serverId")).map(string -> {
                 try {
-                    var trimmed = string.trim();
-                    var corrected = trimmed.length() > 36 ? trimmed.substring(0, 36) : trimmed;
+                    final var trimmed = string.trim();
+                    final var corrected = trimmed.length() > 36 ? trimmed.substring(0, 36) : trimmed;
                     if (!corrected.equals(string)) saveConfig.set(true);
                     return UUID.fromString(corrected);
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     saveConfig.set(true);
                     return UUID.randomUUID();
                 }
@@ -406,43 +406,43 @@ public abstract class SimpleMetrics implements Metrics {
                 return UUID.randomUUID();
             });
 
-            BiPredicate<String, Boolean> predicate = (key, defaultValue) -> {
+            final BiPredicate<String, Boolean> predicate = (key, defaultValue) -> {
                 return properties.map(object -> object.getProperty(key)).map(Boolean::parseBoolean).orElseGet(() -> {
                     saveConfig.set(true);
                     return defaultValue;
                 });
             };
 
-            var enabled = externallyManaged ? externallyEnabled : predicate.test("enabled", true);
-            var errorTracking = predicate.test("submitErrors", true);
-            var additionalMetrics = predicate.test("submitAdditionalMetrics", true);
-            var debug = predicate.test("debug", false);
+            final var enabled = externallyManaged ? externallyEnabled : predicate.test("enabled", true);
+            final var errorTracking = predicate.test("submitErrors", true);
+            final var additionalMetrics = predicate.test("submitAdditionalMetrics", true);
+            final var debug = predicate.test("debug", false);
 
             if (saveConfig.get()) try {
                 save(file, externallyManaged, comment, serverId, enabled, errorTracking, additionalMetrics, debug);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new RuntimeException("Failed to save metrics config", e);
             }
 
             return new Config(serverId, additionalMetrics, debug, enabled, errorTracking, firstRun, externallyManaged);
         }
 
-        private static Optional<Properties> readOrEmpty(Path file) throws RuntimeException {
+        private static Optional<Properties> readOrEmpty(final Path file) throws RuntimeException {
             if (!Files.isRegularFile(file)) return Optional.empty();
-            try (var reader = Files.newBufferedReader(file, UTF_8)) {
-                var properties = new Properties();
+            try (final var reader = Files.newBufferedReader(file, UTF_8)) {
+                final var properties = new Properties();
                 properties.load(reader);
                 return Optional.of(properties);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new RuntimeException("Failed to read metrics config", e);
             }
         }
 
-        private static void save(Path file, boolean externallyManaged, String comment, UUID serverId, boolean enabled, boolean errorTracking, boolean additionalMetrics, boolean debug) throws IOException {
+        private static void save(final Path file, final boolean externallyManaged, final String comment, final UUID serverId, final boolean enabled, final boolean errorTracking, final boolean additionalMetrics, final boolean debug) throws IOException {
             Files.createDirectories(file.getParent());
-            try (var out = Files.newOutputStream(file);
-                 var writer = new OutputStreamWriter(out, UTF_8)) {
-                var properties = new Properties();
+            try (final var out = Files.newOutputStream(file);
+                 final var writer = new OutputStreamWriter(out, UTF_8)) {
+                final var properties = new Properties();
 
                 properties.setProperty("serverId", serverId.toString());
                 if (!externallyManaged) properties.setProperty("enabled", Boolean.toString(enabled));

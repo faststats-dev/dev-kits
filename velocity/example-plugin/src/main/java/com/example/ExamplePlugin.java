@@ -27,12 +27,12 @@ public class ExamplePlugin {
     private @Nullable Metrics metrics = null;
 
     @Inject
-    public ExamplePlugin(VelocityMetrics.Factory factory) {
+    public ExamplePlugin(final VelocityMetrics.Factory factory) {
         this.metricsFactory = factory;
     }
 
     @Subscribe
-    public void onProxyInitialize(ProxyInitializeEvent event) {
+    public void onProxyInitialize(final ProxyInitializeEvent event) {
         this.metrics = metricsFactory
                 .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
@@ -56,7 +56,7 @@ public class ExamplePlugin {
     }
 
     @Subscribe
-    public void onProxyStop(ProxyShutdownEvent event) {
+    public void onProxyStop(final ProxyShutdownEvent event) {
         if (metrics != null) metrics.shutdown();
     }
 
@@ -64,7 +64,7 @@ public class ExamplePlugin {
         try {
             // Do something that might throw an error
             throw new RuntimeException("Something went wrong!");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
         }
     }

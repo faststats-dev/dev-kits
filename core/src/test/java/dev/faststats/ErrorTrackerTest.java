@@ -14,30 +14,30 @@ public class ErrorTrackerTest {
     @Test
     // todo: fix this mess
     public void testCompile() throws InterruptedException {
-        var tracker = ErrorTracker.contextUnaware();
+        final var tracker = ErrorTracker.contextUnaware();
         tracker.attachErrorContext(null);
 
         try {
             roundAndRound(10);
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             tracker.trackError(t);
         }
         try {
             recursiveError();
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             tracker.trackError("↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ↓→ħſðđſ→ðđ””ſ→ʒðđ↓ʒ”ſðđʒ");
             tracker.trackError(t);
         }
         try {
             aroundAndAround();
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             tracker.trackError(t);
             return;
         }
 
         tracker.trackError("Test error");
-        var nestedError = new RuntimeException("Nested error");
-        var error = new RuntimeException(null, nestedError);
+        final var nestedError = new RuntimeException("Nested error");
+        final var error = new RuntimeException(null, nestedError);
         tracker.trackError(error);
 
         tracker.trackError("hello my name is david");
@@ -47,10 +47,10 @@ public class ErrorTrackerTest {
         tracker.trackError("my ipv4 address is 215.223.110.131");
         tracker.trackError("my ipv6 address is f833:be65:65da:975b:4896:88f7:6964:44c0");
 
-        var deepAsyncError = new RuntimeException("deep async error");
+        final var deepAsyncError = new RuntimeException("deep async error");
 
-        var thisIsANiceError = new Thread(() -> {
-            var nestedAsyncError = new RuntimeException("nested async error", deepAsyncError);
+        final var thisIsANiceError = new Thread(() -> {
+            final var nestedAsyncError = new RuntimeException("nested async error", deepAsyncError);
             throw new CompletionException("async error", nestedAsyncError);
         });
         thisIsANiceError.start();
@@ -77,7 +77,7 @@ public class ErrorTrackerTest {
         aroundAndAround();
     }
 
-    public void roundAndRound(int i) throws RuntimeException {
+    public void roundAndRound(final int i) throws RuntimeException {
         if (i <= 0) throw new RuntimeException("out of stack");
         roundAndRound(i - 1);
     }

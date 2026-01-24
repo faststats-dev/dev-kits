@@ -8,15 +8,15 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 
 final class SingleValueChart<T> extends SimpleChart<T> {
-    public SingleValueChart(@ChartId String id, Callable<@Nullable T> callable) throws IllegalArgumentException {
+    public SingleValueChart(@ChartId final String id, final Callable<@Nullable T> callable) throws IllegalArgumentException {
         super(id, callable);
     }
 
     @Override
     public Optional<JsonElement> getData() throws Exception {
         return compute().map(data -> switch (data) {
-            case Boolean bool -> new JsonPrimitive(bool);
-            case Number number -> new JsonPrimitive(number);
+            case final Boolean bool -> new JsonPrimitive(bool);
+            case final Number number -> new JsonPrimitive(number);
             default -> new JsonPrimitive(data.toString());
         });
     }

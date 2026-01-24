@@ -10,7 +10,7 @@ abstract class SimpleChart<T> implements Chart<T> {
     private final @ChartId String id;
     private final Callable<@Nullable T> callable;
 
-    public SimpleChart(@ChartId String id, Callable<@Nullable T> callable) throws IllegalArgumentException {
+    public SimpleChart(@ChartId final String id, final Callable<@Nullable T> callable) throws IllegalArgumentException {
         if (!id.matches(ChartId.PATTERN)) {
             throw new IllegalArgumentException("Invalid chart id '" + id + "', must match '" + ChartId.PATTERN + "'");
         }
@@ -28,9 +28,9 @@ abstract class SimpleChart<T> implements Chart<T> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        SimpleChart<?> that = (SimpleChart<?>) o;
+        final SimpleChart<?> that = (SimpleChart<?>) o;
         return Objects.equals(id, that.id);
     }
 

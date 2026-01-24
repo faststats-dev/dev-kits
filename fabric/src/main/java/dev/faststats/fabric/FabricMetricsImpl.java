@@ -25,7 +25,7 @@ final class FabricMetricsImpl extends SimpleMetrics implements FabricMetrics {
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private FabricMetricsImpl(Factory factory, ModContainer mod, Path config) throws IllegalStateException {
+    private FabricMetricsImpl(final Factory factory, final ModContainer mod, final Path config) throws IllegalStateException {
         super(factory, config);
 
         this.mod = mod;
@@ -38,7 +38,7 @@ final class FabricMetricsImpl extends SimpleMetrics implements FabricMetrics {
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
         assert server != null : "Server not initialized";
         charts.addProperty("minecraft_version", server.getServerVersion());
         charts.addProperty("online_mode", server.usesAuthentication());
@@ -48,38 +48,38 @@ final class FabricMetricsImpl extends SimpleMetrics implements FabricMetrics {
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.error(message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.info(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.warn(message);
     }
 
-    private <T> Optional<T> tryOrEmpty(Supplier<T> supplier) {
+    private <T> Optional<T> tryOrEmpty(final Supplier<T> supplier) {
         try {
             return Optional.of(supplier.get());
-        } catch (NoSuchMethodError | Exception e) {
+        } catch (final NoSuchMethodError | Exception e) {
             return Optional.empty();
         }
     }
 
     static final class Factory extends SimpleMetrics.Factory<String, FabricMetrics.Factory> implements FabricMetrics.Factory {
         @Override
-        public Metrics create(String modId) throws IllegalStateException, IllegalArgumentException {
-            var fabric = FabricLoader.getInstance();
-            var mod = fabric.getModContainer(modId).orElseThrow(() -> {
+        public Metrics create(final String modId) throws IllegalStateException, IllegalArgumentException {
+            final var fabric = FabricLoader.getInstance();
+            final var mod = fabric.getModContainer(modId).orElseThrow(() -> {
                 return new IllegalArgumentException("Mod not found: " + modId);
             });
 
-            var dataFolder = fabric.getConfigDir().resolve("faststats");
-            var config = dataFolder.resolve("config.properties");
+            final var dataFolder = fabric.getConfigDir().resolve("faststats");
+            final var config = dataFolder.resolve("config.properties");
 
             return new FabricMetricsImpl(this, mod, config);
         }

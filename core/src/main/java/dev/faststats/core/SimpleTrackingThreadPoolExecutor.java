@@ -12,15 +12,15 @@ import java.util.concurrent.TimeUnit;
 final class SimpleTrackingThreadPoolExecutor implements TrackingThreadPoolExecutor {
     private final ErrorTracker tracker;
 
-    public SimpleTrackingThreadPoolExecutor(ErrorTracker tracker) {
+    public SimpleTrackingThreadPoolExecutor(final ErrorTracker tracker) {
         this.tracker = tracker;
     }
 
     @Override
-    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) final int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue) {
         return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, tracker.threadFactory()) {
             @Override
-            protected void afterExecute(Runnable r, Throwable t) {
+            protected void afterExecute(final Runnable r, final Throwable t) {
                 super.afterExecute(r, t);
                 tracker.trackError(t);
             }
@@ -28,10 +28,10 @@ final class SimpleTrackingThreadPoolExecutor implements TrackingThreadPoolExecut
     }
 
     @Override
-    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) final int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue, final ThreadFactory threadFactory) {
         return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory) {
             @Override
-            protected void afterExecute(Runnable r, Throwable t) {
+            protected void afterExecute(final Runnable r, final Throwable t) {
                 super.afterExecute(r, t);
                 tracker.trackError(t);
             }
@@ -39,10 +39,10 @@ final class SimpleTrackingThreadPoolExecutor implements TrackingThreadPoolExecut
     }
 
     @Override
-    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) final int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue, final RejectedExecutionHandler handler) {
         return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler) {
             @Override
-            protected void afterExecute(Runnable r, Throwable t) {
+            protected void afterExecute(final Runnable r, final Throwable t) {
                 super.afterExecute(r, t);
                 tracker.trackError(t);
             }
@@ -50,10 +50,10 @@ final class SimpleTrackingThreadPoolExecutor implements TrackingThreadPoolExecut
     }
 
     @Override
-    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    public ThreadPoolExecutor create(@Range(from = 0, to = Integer.MAX_VALUE) final int corePoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final int maximumPoolSize, @Range(from = 0, to = Integer.MAX_VALUE) final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue, final ThreadFactory threadFactory, final RejectedExecutionHandler handler) {
         return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler) {
             @Override
-            protected void afterExecute(Runnable r, Throwable t) {
+            protected void afterExecute(final Runnable r, final Throwable t) {
                 super.afterExecute(r, t);
                 tracker.trackError(t);
             }

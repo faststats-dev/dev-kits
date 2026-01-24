@@ -18,14 +18,14 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
 
     @Async.Schedule
     @Contract(mutates = "io")
-    private MinestomMetricsImpl(Factory factory, Path config) throws IllegalStateException {
+    private MinestomMetricsImpl(final Factory factory, final Path config) throws IllegalStateException {
         super(factory, config);
 
         startSubmitting();
     }
 
     @Override
-    protected void appendDefaultData(JsonObject charts) {
+    protected void appendDefaultData(final JsonObject charts) {
         charts.addProperty("minecraft_version", MinecraftServer.VERSION_NAME);
         charts.addProperty("online_mode", !(MinecraftServer.process().auth() instanceof Auth.Offline));
         charts.addProperty("player_count", MinecraftServer.getConnectionManager().getOnlinePlayerCount());
@@ -33,24 +33,24 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
     }
 
     @Override
-    protected void printError(String message, @Nullable Throwable throwable) {
+    protected void printError(final String message, @Nullable final Throwable throwable) {
         logger.error(message, throwable);
     }
 
     @Override
-    protected void printInfo(String message) {
+    protected void printInfo(final String message) {
         logger.info(message);
     }
 
     @Override
-    protected void printWarning(String message) {
+    protected void printWarning(final String message) {
         logger.warn(message);
     }
 
     static final class Factory extends SimpleMetrics.Factory<MinecraftServer, MinestomMetrics.Factory> implements MinestomMetrics.Factory {
         @Override
-        public Metrics create(MinecraftServer server) throws IllegalStateException {
-            var config = Path.of("faststats", "config.properties");
+        public Metrics create(final MinecraftServer server) throws IllegalStateException {
+            final var config = Path.of("faststats", "config.properties");
             return new MinestomMetricsImpl(this, config);
         }
     }

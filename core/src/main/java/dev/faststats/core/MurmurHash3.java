@@ -32,21 +32,21 @@ final class MurmurHash3 {
      * @see <a href="https://en.wikipedia.org/wiki/MurmurHash">MurmurHash on Wikipedia</a>
      */
     @Contract(value = "_ -> new", pure = true)
-    public static long[] hash(String data) {
-        var bytes = data.getBytes(StandardCharsets.UTF_8);
+    public static long[] hash(final String data) {
+        final var bytes = data.getBytes(StandardCharsets.UTF_8);
         var h1 = 0L;
         var h2 = 0L;
         final var c1 = 0x87c37b91114253d5L;
         final var c2 = 0x4cf5ad432745937fL;
-        var length = bytes.length;
-        var blocks = length / 16;
+        final var length = bytes.length;
+        final var blocks = length / 16;
 
         // Process 128-bit blocks
         for (int i = 0; i < blocks; i++) {
             var k1 = getInt(bytes, i * 16);
             var k2 = getInt(bytes, i * 16 + 4);
-            var k3 = getInt(bytes, i * 16 + 8);
-            var k4 = getInt(bytes, i * 16 + 12);
+            final var k3 = getInt(bytes, i * 16 + 8);
+            final var k4 = getInt(bytes, i * 16 + 12);
 
             k1 *= (int) c1;
             k1 = Integer.rotateLeft(k1, 31);
@@ -72,7 +72,7 @@ final class MurmurHash3 {
         var k2 = 0;
         var k3 = 0;
         var k4 = 0;
-        var tail = blocks * 16;
+        final var tail = blocks * 16;
 
         switch (length & 15) {
             case 15:
@@ -173,7 +173,7 @@ final class MurmurHash3 {
      * @return the 32-bit integer value read in little-endian order
      */
     @Contract(pure = true)
-    private static int getInt(byte[] bytes, int offset) {
+    private static int getInt(final byte[] bytes, final int offset) {
         return (bytes[offset] & 0xff) |
                 ((bytes[offset + 1] & 0xff) << 8) |
                 ((bytes[offset + 2] & 0xff) << 16) |
