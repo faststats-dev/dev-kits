@@ -1,9 +1,9 @@
 package dev.faststats;
 
 import com.google.gson.JsonObject;
+import dev.faststats.core.ErrorTracker;
 import dev.faststats.core.SimpleMetrics;
 import dev.faststats.core.Token;
-import dev.faststats.core.ErrorTracker;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @NullMarked
 public class MockMetrics extends SimpleMetrics {
@@ -36,8 +35,8 @@ public class MockMetrics extends SimpleMetrics {
     }
 
     @Override
-    public CompletableFuture<Boolean> submitAsync() throws IOException {
-        return super.submitAsync();
+    public boolean submit() throws IOException {
+        return super.submit();
     }
 
     @Override
