@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -147,7 +146,7 @@ public abstract class SimpleMetrics implements Metrics {
         info("Starting metrics submission");
         executor.scheduleAtFixedRate(() -> {
             try {
-                submitAsync();
+                submit();
             } catch (Throwable t) {
                 error("Failed to submit metrics", t);
             }
@@ -158,7 +157,7 @@ public abstract class SimpleMetrics implements Metrics {
         return executor != null && !executor.isShutdown();
     }
 
-    protected CompletableFuture<Boolean> submitAsync() throws IOException {
+    protected boolean submit() throws IOException {
         var data = createData().toString();
         var bytes = data.getBytes(UTF_8);
 
@@ -184,7 +183,8 @@ public abstract class SimpleMetrics implements Metrics {
                     .build();
 
             info("Sending metrics to: " + url);
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(UTF_8)).thenApply(response -> {
+            try {
+                var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
                 var statusCode = response.statusCode();
                 var body = response.body();
 
@@ -201,18 +201,14 @@ public abstract class SimpleMetrics implements Metrics {
                 } else {
                     warn("Received unexpected response from metrics server: " + statusCode + " (" + body + ")");
                 }
-                return false;
-            }).exceptionally(throwable -> {
-                var cause = throwable.getCause() != null ? throwable.getCause() : throwable;
-                if (cause instanceof HttpConnectTimeoutException) {
-                    error("Metrics submission timed out after 3 seconds: " + url, null);
-                } else if (cause instanceof ConnectException) {
-                    error("Failed to connect to metrics server: " + url, null);
-                } else {
-                    error("Failed to submit metrics", throwable);
-                }
-                return false;
-            });
+            } catch (HttpConnectTimeoutException t) {
+                error("Metrics submission timed out after 3 seconds: " + url, null);
+            } catch (ConnectException t) {
+                error("Failed to connect to metrics server: " + url, null);
+            } catch (Throwable t) {
+                error("Failed to submit metrics", t);
+            }
+            return false;
         }
     }
 
