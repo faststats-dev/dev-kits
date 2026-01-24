@@ -33,12 +33,15 @@ final class SimpleErrorTracker implements ErrorTracker {
 
     @Override
     public void trackError(final Throwable error) {
-        final var compiled = ErrorHelper.compile(error, null);
-        final var hashed = MurmurHash3.hash(compiled);
-        if (collected.compute(hashed, (k, v) -> {
-            return v == null ? 1 : v + 1;
-        }) > 1) return;
-        reports.put(hashed, compiled);
+        try {
+            final var compiled = ErrorHelper.compile(error, null);
+            final var hashed = MurmurHash3.hash(compiled);
+            if (collected.compute(hashed, (k, v) -> {
+                return v == null ? 1 : v + 1;
+            }) > 1) return;
+            reports.put(hashed, compiled);
+        } catch (final NoClassDefFoundError ignored) {
+        }
     }
 
     public JsonArray getData() {
