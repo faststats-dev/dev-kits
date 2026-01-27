@@ -3,7 +3,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.hypixel.hytale:Server:2026.01.26-9bf507572")
+    compileOnly("com.hypixel.hytale:Server:2026.01.26-57a62ca8d")
     implementation(project(":hytale"))
 }
 
