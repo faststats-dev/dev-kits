@@ -1,6 +1,7 @@
 package dev.faststats.minestom;
 
 import dev.faststats.core.Metrics;
+import net.minestom.server.Auth;
 import net.minestom.server.MinecraftServer;
 import org.jetbrains.annotations.Contract;
 
@@ -20,6 +21,15 @@ public sealed interface MinestomMetrics extends Metrics permits MinestomMetricsI
     static Factory factory() {
         return new MinestomMetricsImpl.Factory();
     }
+
+    /**
+     * Registers additional exception handlers.
+     *
+     * @apiNote This method may only be called after {@link MinecraftServer#init(Auth)}.
+     * @since 0.14.0
+     */
+    @Override
+    void ready();
 
     interface Factory extends Metrics.Factory<MinecraftServer, Factory> {
     }
