@@ -1,9 +1,7 @@
 package dev.faststats.bukkit;
 
 import com.google.gson.JsonObject;
-import dev.faststats.core.Metrics;
 import dev.faststats.core.SimpleMetrics;
-import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
@@ -13,11 +11,9 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
-    private final Logger logger;
-    private final Server server;
+    private final Plugin plugin;
 
     private final String pluginVersion;
     private final String minecraftVersion;
@@ -29,8 +25,8 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     private BukkitMetricsImpl(final Factory factory, final Plugin plugin, final Path config) throws IllegalStateException {
         super(factory, config);
 
-        this.logger = plugin.getLogger();
-        this.server = plugin.getServer();
+        this.plugin = plugin;
+        var server = plugin.getServer();
 
         this.pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
                 .orElseGet(() -> plugin.getDescription().getVersion());
@@ -42,7 +38,12 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         startSubmitting();
     }
 
+    Plugin plugin() {
+        return plugin;
+    }
+
     private boolean checkOnlineMode() {
+        var server = plugin.getServer();
         return tryOrEmpty(() -> server.getServerConfig().isProxyOnlineMode())
                 .or(() -> tryOrEmpty(this::isProxyOnlineMode))
                 .orElseGet(server::getOnlineMode);
@@ -50,6 +51,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     @SuppressWarnings("removal")
     private boolean isProxyOnlineMode() {
+        var server = plugin.getServer();
         final var proxies = server.spigot().getPaperConfig().getConfigurationSection("proxies");
         if (proxies == null) return false;
 
@@ -72,7 +74,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     private int getPlayerCount() {
         try {
-            return server.getOnlinePlayers().size();
+            return plugin.getServer().getOnlinePlayers().size();
         } catch (final Throwable t) {
             error("Failed to get player count", t);
             return 0;
@@ -81,17 +83,26 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     @Override
     protected void printError(final String message, @Nullable final Throwable throwable) {
-        logger.log(Level.SEVERE, message, throwable);
+        plugin.getLogger().log(Level.SEVERE, message, throwable);
     }
 
     @Override
     protected void printInfo(final String message) {
-        logger.info(message);
+        plugin.getLogger().info(message);
     }
 
     @Override
     protected void printWarning(final String message) {
-        logger.warning(message);
+        plugin.getLogger().warning(message);
+    }
+
+    @Override
+    public void ready() {
+        if (getErrorTracker().isPresent()) try {
+            Class.forName("com.destroystokyo.paper.event.server.ServerExceptionEvent");
+            plugin.getServer().getPluginManager().registerEvents(new PaperEventListener(this), plugin);
+        } catch (final ClassNotFoundException ignored) {
+        }
     }
 
     private <T> Optional<T> tryOrEmpty(final Supplier<T> supplier) {
@@ -104,7 +115,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     static final class Factory extends SimpleMetrics.Factory<Plugin, BukkitMetrics.Factory> implements BukkitMetrics.Factory {
         @Override
-        public Metrics create(final Plugin plugin) throws IllegalStateException {
+        public BukkitMetrics create(final Plugin plugin) throws IllegalStateException {
             final var dataFolder = getPluginsFolder(plugin).resolve("faststats");
             final var config = dataFolder.resolve("config.properties");
             return new BukkitMetricsImpl(this, plugin, config);
