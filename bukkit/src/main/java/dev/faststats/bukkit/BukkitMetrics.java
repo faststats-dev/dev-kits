@@ -1,6 +1,7 @@
 package dev.faststats.bukkit;
 
 import dev.faststats.core.Metrics;
+import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Contract;
 
@@ -21,6 +22,18 @@ public sealed interface BukkitMetrics extends Metrics permits BukkitMetricsImpl 
         return new BukkitMetricsImpl.Factory();
     }
 
+    /**
+     * Registers additional exception handlers on Paper-based implementations.
+     *
+     * @throws IllegalPluginAccessException if the plugin is not yet enabled
+     * @apiNote This method may only be called {@link Plugin#onEnable() onEnable()}.
+     * @since 0.14.0
+     */
+    @Override
+    void ready() throws IllegalPluginAccessException;
+
     interface Factory extends Metrics.Factory<Plugin, Factory> {
+        @Override
+        BukkitMetrics create(Plugin object) throws IllegalStateException;
     }
 }

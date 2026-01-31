@@ -38,7 +38,7 @@ public class ExamplePlugin extends Plugin {
 
     @Override
     public void onDisable() {
-        metrics.shutdown();
+        metrics.shutdown(); // safely shut down metrics submission
     }
 
     public void doSomethingWrong() {

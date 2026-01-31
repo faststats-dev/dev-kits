@@ -6,7 +6,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 final class ErrorHelper {
     private static final int MESSAGE_LENGTH = Math.min(1000, Integer.getInteger("faststats.message-length", 500));
@@ -104,18 +107,25 @@ final class ErrorHelper {
     }
 
     public static boolean isSameLoader(final ClassLoader loader, final Throwable error) {
+        return isSameLoader(loader, error, Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    private static boolean isSameLoader(final ClassLoader loader, @Nullable final Throwable error, final Set<Throwable> visited) {
+        if (error == null || !visited.add(error)) return false;
+
         final var stackTrace = error.getStackTrace();
-        if (stackTrace == null || stackTrace.length == 0) return false;
+        if (stackTrace == null || stackTrace.length == 0)
+            return isSameLoader(loader, error.getCause(), visited);
 
         final var firstNonLibraryIndex = findFirstNonLibraryFrameIndex(stackTrace);
-        if (firstNonLibraryIndex == -1) return false;
+        if (firstNonLibraryIndex == -1) return isSameLoader(loader, error.getCause(), visited);
 
         final var framesToCheck = Math.min(5, stackTrace.length - firstNonLibraryIndex);
 
         for (var i = 0; i < framesToCheck; i++) {
             final var frame = stackTrace[firstNonLibraryIndex + i];
             if (isLibraryClass(frame.getClassName())) continue;
-            if (!isFromLoader(frame, loader)) return false;
+            if (!isFromLoader(frame, loader)) return isSameLoader(loader, error.getCause(), visited);
         }
 
         return true;

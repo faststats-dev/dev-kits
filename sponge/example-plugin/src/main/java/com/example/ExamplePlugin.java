@@ -55,7 +55,7 @@ public class ExamplePlugin {
 
     @Listener
     public void onServerStop(final StoppingEngineEvent<Server> event) {
-        if (metrics != null) metrics.shutdown();
+        if (metrics != null) metrics.shutdown(); // safely shut down metrics submission
     }
 
     public void doSomethingWrong() {

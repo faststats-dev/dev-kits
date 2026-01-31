@@ -43,7 +43,7 @@ public class ExamplePlugin extends JavaPlugin {
 
     @Override
     protected void shutdown() {
-        metrics.shutdown();
+        metrics.shutdown(); // safely shut down metrics submission
     }
 
     public void doSomethingWrong() {

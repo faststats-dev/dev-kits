@@ -57,7 +57,7 @@ public class ExamplePlugin {
 
     @Subscribe
     public void onProxyStop(final ProxyShutdownEvent event) {
-        if (metrics != null) metrics.shutdown();
+        if (metrics != null) metrics.shutdown(); // safely shut down metrics submission
     }
 
     public void doSomethingWrong() {

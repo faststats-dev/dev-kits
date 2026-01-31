@@ -7,7 +7,6 @@ import dev.faststats.core.Token;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Set;
 import java.util.UUID;

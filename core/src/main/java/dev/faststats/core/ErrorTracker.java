@@ -163,4 +163,17 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
      */
     @Contract(pure = true)
     TrackingThreadPoolExecutor threadPoolExecutor();
+
+    /**
+     * Checks if the error occurred in the same class loader as the provided loader.
+     *
+     * @param loader the class loader
+     * @param error  the error
+     * @return whether the error occurred in the same class loader
+     * @since 0.14.0
+     */
+    @Contract(pure = true)
+    static boolean isSameLoader(ClassLoader loader, Throwable error) {
+        return ErrorHelper.isSameLoader(loader, error);
+    }
 }    

@@ -1,6 +1,7 @@
 package dev.faststats.minestom;
 
 import com.google.gson.JsonObject;
+import dev.faststats.core.ErrorTracker;
 import dev.faststats.core.Metrics;
 import dev.faststats.core.SimpleMetrics;
 import net.minestom.server.Auth;
@@ -45,6 +46,20 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
     @Override
     protected void printWarning(final String message) {
         logger.warn(message);
+    }
+
+    @Override
+    public void ready() {
+        getErrorTracker().ifPresent(this::registerExceptionHandler);
+    }
+
+    private void registerExceptionHandler(ErrorTracker errorTracker) {
+        var handler = MinecraftServer.getExceptionManager().getExceptionHandler();
+        MinecraftServer.getExceptionManager().setExceptionHandler(error -> {
+            handler.handleException(error);
+            if (!ErrorTracker.isSameLoader(getClass().getClassLoader(), error)) return;
+            errorTracker.trackError(error);
+        });
     }
 
     static final class Factory extends SimpleMetrics.Factory<MinecraftServer, MinestomMetrics.Factory> implements MinestomMetrics.Factory {
