@@ -43,7 +43,19 @@ public interface Metrics {
     Config getConfig();
 
     /**
-     * Shuts down the metrics submission.
+     * Performs additional post-startup tasks.
+     * <p>
+     * This method may only be called when the application startup is complete.
+     * <p>
+     * <i>No-op in most implementations.</i>
+     *
+     * @since 0.14.0
+     */
+    default void ready() {
+    }
+
+    /**
+     * Safely shuts down the metrics submission.
      * <p>
      * This method should be called when the application is shutting down.
      *
