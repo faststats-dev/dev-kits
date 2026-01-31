@@ -89,7 +89,7 @@ final class SimpleErrorTracker implements ErrorTracker {
             final var handler = originalHandler;
             if (handler != null) handler.uncaughtException(thread, error);
             try {
-                if (loader != null && !ErrorHelper.isSameLoader(loader, error)) return;
+                if (loader != null && !ErrorTracker.isSameLoader(loader, error)) return;
                 final var event = errorEvent;
                 if (event != null) event.accept(loader, error);
                 trackError(error);
