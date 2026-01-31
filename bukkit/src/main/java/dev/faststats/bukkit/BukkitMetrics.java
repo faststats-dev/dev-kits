@@ -22,5 +22,7 @@ public sealed interface BukkitMetrics extends Metrics permits BukkitMetricsImpl 
     }
 
     interface Factory extends Metrics.Factory<Plugin, Factory> {
+        @Override
+        BukkitMetrics create(Plugin object) throws IllegalStateException;
     }
 }
