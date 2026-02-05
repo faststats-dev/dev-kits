@@ -6,5 +6,5 @@ repositories {
 
 dependencies {
     api(project(":core"))
-    compileOnly("com.hypixel.hytale:Server:2026.01.29-301e13929")
+    compileOnly("com.hypixel.hytale:Server:2026.02.05-bd949ff90")
 }
