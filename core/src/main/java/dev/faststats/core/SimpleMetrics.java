@@ -45,6 +45,7 @@ public abstract class SimpleMetrics implements Metrics {
     private final Config config;
     private final @Token String token;
     private final @Nullable ErrorTracker tracker;
+    private final @Nullable Runnable flush;
     private final URI url;
     private final boolean debug;
 
@@ -58,6 +59,7 @@ public abstract class SimpleMetrics implements Metrics {
         this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || config.debug();
         this.token = factory.token;
         this.tracker = config.errorTracking ? factory.tracker : null;
+        this.flush = factory.flush;
         this.url = factory.url;
     }
 
@@ -72,6 +74,7 @@ public abstract class SimpleMetrics implements Metrics {
             final Set<Chart<?>> charts,
             @Token final String token,
             @Nullable final ErrorTracker tracker,
+            @Nullable final Runnable flush,
             final URI url,
             final boolean debug
     ) {
@@ -84,6 +87,7 @@ public abstract class SimpleMetrics implements Metrics {
         this.debug = debug;
         this.token = token;
         this.tracker = tracker;
+        this.flush = flush;
         this.url = url;
     }
 
@@ -201,6 +205,7 @@ public abstract class SimpleMetrics implements Metrics {
                 if (statusCode >= 200 && statusCode < 300) {
                     info("Metrics submitted with status code: " + statusCode + " (" + body + ")");
                     getErrorTracker().map(SimpleErrorTracker.class::cast).ifPresent(SimpleErrorTracker::clear);
+                    if (flush != null) flush.run();
                     return true;
                 } else if (statusCode >= 300 && statusCode < 400) {
                     warn("Received redirect response from metrics server: " + statusCode + " (" + body + ")");
@@ -320,6 +325,7 @@ public abstract class SimpleMetrics implements Metrics {
         private final Set<Chart<?>> charts = new HashSet<>(0);
         private URI url = URI.create("https://metrics.faststats.dev/v1/collect");
         private @Nullable ErrorTracker tracker;
+        private @Nullable Runnable flush;
         private @Nullable String token;
         private boolean debug = false;
 
@@ -327,6 +333,13 @@ public abstract class SimpleMetrics implements Metrics {
         @SuppressWarnings("unchecked")
         public F addChart(final Chart<?> chart) throws IllegalArgumentException {
             if (!charts.add(chart)) throw new IllegalArgumentException("Chart already added: " + chart.getId());
+            return (F) this;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public F onFlush(final Runnable flush) {
+            this.flush = flush;
             return (F) this;
         }
 
