@@ -26,10 +26,10 @@ final class HytaleMetricsImpl extends SimpleMetrics implements HytaleMetrics {
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
-        charts.addProperty("server_version", HytaleServer.get().getServerName());
-        charts.addProperty("player_count", Universe.get().getPlayerCount());
-        charts.addProperty("server_type", "Hytale");
+    protected void appendDefaultData(final JsonObject metrics) {
+        metrics.addProperty("server_version", HytaleServer.get().getServerName());
+        metrics.addProperty("player_count", Universe.get().getPlayerCount());
+        metrics.addProperty("server_type", "Hytale");
     }
 
     @Override

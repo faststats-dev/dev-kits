@@ -1,4 +1,4 @@
-package dev.faststats.core.chart;
+package dev.faststats.core.data;
 
 import org.jspecify.annotations.Nullable;
 
@@ -6,20 +6,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-abstract class SimpleChart<T> implements Chart<T> {
-    private final @ChartId String id;
+abstract class SimpleMetric<T> implements Metric<T> {
+    private final @SourceId String id;
     private final Callable<@Nullable T> callable;
 
-    public SimpleChart(@ChartId final String id, final Callable<@Nullable T> callable) throws IllegalArgumentException {
-        if (!id.matches(ChartId.PATTERN)) {
-            throw new IllegalArgumentException("Invalid chart id '" + id + "', must match '" + ChartId.PATTERN + "'");
+    public SimpleMetric(@SourceId final String id, final Callable<@Nullable T> callable) throws IllegalArgumentException {
+        if (!id.matches(SourceId.PATTERN)) {
+            throw new IllegalArgumentException("Invalid source id '" + id + "', must match '" + SourceId.PATTERN + "'");
         }
         this.id = id;
         this.callable = callable;
     }
 
     @Override
-    public final @ChartId String getId() {
+    public final @SourceId String getId() {
         return id;
     }
 
@@ -30,7 +30,7 @@ abstract class SimpleChart<T> implements Chart<T> {
     @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        final SimpleChart<?> that = (SimpleChart<?>) o;
+        final SimpleMetric<?> that = (SimpleMetric<?>) o;
         return Objects.equals(id, that.id);
     }
 
@@ -41,7 +41,7 @@ abstract class SimpleChart<T> implements Chart<T> {
 
     @Override
     public String toString() {
-        return "SimpleChart{" +
+        return "SimpleMetric{" +
                 "id='" + id + '\'' +
                 '}';
     }

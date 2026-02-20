@@ -1,4 +1,4 @@
-package dev.faststats.core.chart;
+package dev.faststats.core.data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -7,8 +7,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-final class ArrayChart<T> extends SimpleChart<T[]> {
-    public ArrayChart(@ChartId final String id, final Callable<T @Nullable []> callable) throws IllegalArgumentException {
+final class ArrayMetric<T> extends SimpleMetric<T[]> {
+    public ArrayMetric(@SourceId final String id, final Callable<T @Nullable []> callable) throws IllegalArgumentException {
         super(id, callable);
     }
 

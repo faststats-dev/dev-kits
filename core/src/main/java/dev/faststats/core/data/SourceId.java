@@ -1,4 +1,4 @@
-package dev.faststats.core.chart;
+package dev.faststats.core.data;
 
 import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NonNls;
@@ -13,14 +13,14 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 
 /**
- * An annotation to mark a chart id.
+ * An annotation to mark a source id.
  *
- * @since 0.1.0
+ * @since 0.16.0
  */
 @NonNls
-@Pattern(ChartId.PATTERN)
+@Pattern(SourceId.PATTERN)
 @Retention(RetentionPolicy.CLASS)
 @Target({METHOD, FIELD, PARAMETER, LOCAL_VARIABLE})
-public @interface ChartId {
+public @interface SourceId {
     String PATTERN = "[a-z_]+";
 }

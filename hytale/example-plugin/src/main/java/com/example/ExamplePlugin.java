@@ -4,7 +4,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import dev.faststats.core.ErrorTracker;
 import dev.faststats.core.Metrics;
-import dev.faststats.core.chart.Chart;
+import dev.faststats.core.data.Metric;
 import dev.faststats.hytale.HytaleMetrics;
 
 import java.net.URI;
@@ -19,14 +19,14 @@ public class ExamplePlugin extends JavaPlugin {
     private final Metrics metrics = HytaleMetrics.factory()
             .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
-            // Custom example charts
+            // Custom example metrics
             // For this to work you have to create a corresponding data source in your project settings first
-            .addChart(Chart.number("example_chart", () -> 42))
-            .addChart(Chart.string("example_string", () -> "Hello, World!"))
-            .addChart(Chart.bool("example_boolean", () -> true))
-            .addChart(Chart.stringArray("example_string_array", () -> new String[]{"Option 1", "Option 2"}))
-            .addChart(Chart.numberArray("example_number_array", () -> new Number[]{1, 2, 3}))
-            .addChart(Chart.booleanArray("example_boolean_array", () -> new Boolean[]{true, false}))
+            .addMetric(Metric.number("example_metric", () -> 42))
+            .addMetric(Metric.string("example_string", () -> "Hello, World!"))
+            .addMetric(Metric.bool("example_boolean", () -> true))
+            .addMetric(Metric.stringArray("example_string_array", () -> new String[]{"Option 1", "Option 2"}))
+            .addMetric(Metric.numberArray("example_number_array", () -> new Number[]{1, 2, 3}))
+            .addMetric(Metric.booleanArray("example_boolean_array", () -> new Boolean[]{true, false}))
 
             // Attach an error tracker
             // This must be enabled in the project settings

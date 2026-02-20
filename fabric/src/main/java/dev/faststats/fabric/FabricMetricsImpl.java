@@ -38,13 +38,13 @@ final class FabricMetricsImpl extends SimpleMetrics implements FabricMetrics {
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
+    protected void appendDefaultData(final JsonObject metrics) {
         assert server != null : "Server not initialized";
-        charts.addProperty("minecraft_version", server.getServerVersion());
-        charts.addProperty("online_mode", server.usesAuthentication());
-        charts.addProperty("player_count", server.getPlayerCount());
-        charts.addProperty("plugin_version", mod.getMetadata().getVersion().getFriendlyString());
-        charts.addProperty("server_type", "Fabric");
+        metrics.addProperty("minecraft_version", server.getServerVersion());
+        metrics.addProperty("online_mode", server.usesAuthentication());
+        metrics.addProperty("player_count", server.getPlayerCount());
+        metrics.addProperty("plugin_version", mod.getMetadata().getVersion().getFriendlyString());
+        metrics.addProperty("server_type", "Fabric");
     }
 
     @Override

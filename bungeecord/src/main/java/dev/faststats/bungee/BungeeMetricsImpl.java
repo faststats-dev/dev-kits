@@ -31,12 +31,12 @@ final class BungeeMetricsImpl extends SimpleMetrics implements BungeeMetrics {
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
-        charts.addProperty("online_mode", server.getConfig().isOnlineMode());
-        charts.addProperty("player_count", server.getOnlineCount());
-        charts.addProperty("plugin_version", plugin.getDescription().getVersion());
-        charts.addProperty("proxy_version", server.getVersion());
-        charts.addProperty("server_type", server.getName());
+    protected void appendDefaultData(final JsonObject metrics) {
+        metrics.addProperty("online_mode", server.getConfig().isOnlineMode());
+        metrics.addProperty("player_count", server.getOnlineCount());
+        metrics.addProperty("plugin_version", plugin.getDescription().getVersion());
+        metrics.addProperty("proxy_version", server.getVersion());
+        metrics.addProperty("server_type", server.getName());
     }
 
     @Override

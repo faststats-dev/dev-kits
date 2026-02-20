@@ -1,6 +1,6 @@
 package dev.faststats.core;
 
-import dev.faststats.core.chart.Chart;
+import dev.faststats.core.data.Metric;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 
@@ -71,17 +71,17 @@ public interface Metrics {
      */
     interface Factory<T, F extends Factory<T, F>> {
         /**
-         * Adds a chart to the metrics submission.
+         * Adds a metric to the metrics submission.
          * <p>
-         * If {@link Config#additionalMetrics()} is disabled, the chart will not be submitted.
+         * If {@link Config#additionalMetrics()} is disabled, the metric will not be submitted.
          *
-         * @param chart the chart to add
+         * @param metric the metric to add
          * @return the metrics factory
-         * @throws IllegalArgumentException if the chart is already added
-         * @since 0.1.0
+         * @throws IllegalArgumentException if the metric is already added
+         * @since 0.16.0
          */
         @Contract(mutates = "this")
-        F addChart(Chart<?> chart) throws IllegalArgumentException;
+        F addMetric(Metric<?> metric) throws IllegalArgumentException;
 
         /**
          * Sets the flush callback for this metrics instance.

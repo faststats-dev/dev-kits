@@ -1,7 +1,7 @@
 package dev.faststats.core;
 
 import com.google.gson.JsonObject;
-import dev.faststats.core.chart.Chart;
+import dev.faststats.core.data.Metric;
 import org.jetbrains.annotations.Async;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -41,7 +41,7 @@ public abstract class SimpleMetrics implements Metrics {
             .build();
     private @Nullable ScheduledExecutorService executor = null;
 
-    private final Set<Chart<?>> charts;
+    private final Set<Metric<?>> metrics;
     private final Config config;
     private final @Token String token;
     private final @Nullable ErrorTracker tracker;
@@ -55,7 +55,7 @@ public abstract class SimpleMetrics implements Metrics {
         if (factory.token == null) throw new IllegalStateException("Token must be specified");
 
         this.config = config;
-        this.charts = config.additionalMetrics ? Set.copyOf(factory.charts) : Set.of();
+        this.metrics = config.additionalMetrics ? Set.copyOf(factory.metrics) : Set.of();
         this.debug = factory.debug || Boolean.getBoolean("faststats.debug") || config.debug();
         this.token = factory.token;
         this.tracker = config.errorTracking ? factory.tracker : null;
@@ -71,7 +71,7 @@ public abstract class SimpleMetrics implements Metrics {
     @VisibleForTesting
     protected SimpleMetrics(
             final Config config,
-            final Set<Chart<?>> charts,
+            final Set<Metric<?>> metrics,
             @Token final String token,
             @Nullable final ErrorTracker tracker,
             @Nullable final Runnable flush,
@@ -82,7 +82,7 @@ public abstract class SimpleMetrics implements Metrics {
             throw new IllegalArgumentException("Invalid token '" + token + "', must match '" + Token.PATTERN + "'");
         }
 
-        this.charts = config.additionalMetrics ? Set.copyOf(charts) : Set.of();
+        this.metrics = config.additionalMetrics ? Set.copyOf(metrics) : Set.of();
         this.config = config;
         this.debug = debug;
         this.token = token;
@@ -235,32 +235,32 @@ public abstract class SimpleMetrics implements Metrics {
 
     protected JsonObject createData() {
         final var data = new JsonObject();
-        final var charts = new JsonObject();
+        final var metrics = new JsonObject();
 
-        charts.addProperty("java_version", javaVersion);
-        charts.addProperty("os_arch", osArch);
-        charts.addProperty("os_name", osName);
-        charts.addProperty("os_version", osVersion);
-        charts.addProperty("core_count", coreCount);
+        metrics.addProperty("java_version", javaVersion);
+        metrics.addProperty("os_arch", osArch);
+        metrics.addProperty("os_name", osName);
+        metrics.addProperty("os_version", osVersion);
+        metrics.addProperty("core_count", coreCount);
 
-        this.charts.forEach(chart -> {
+        this.metrics.forEach(metric -> {
             try {
-                chart.getData().ifPresent(chartData -> charts.add(chart.getId(), chartData));
+                metric.getData().ifPresent(element -> metrics.add(metric.getId(), element));
             } catch (final Throwable t) {
-                error("Failed to build chart data: " + chart.getId(), t);
+                error("Failed to build metric data: " + metric.getId(), t);
                 getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
             }
         });
 
         try {
-            appendDefaultData(charts);
+            appendDefaultData(metrics);
         } catch (final Throwable t) {
             error("Failed to append default data", t);
             getErrorTracker().ifPresent(tracker -> tracker.trackError(t));
         }
 
         data.addProperty("identifier", config.serverId().toString());
-        data.add("data", charts);
+        data.add("data", metrics);
 
         getErrorTracker().map(SimpleErrorTracker.class::cast)
                 .map(SimpleErrorTracker::getData)
@@ -285,7 +285,7 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     @Contract(mutates = "param1")
-    protected abstract void appendDefaultData(JsonObject charts);
+    protected abstract void appendDefaultData(JsonObject metrics);
 
     protected void error(final String message, @Nullable final Throwable throwable) {
         if (debug) printError("[" + getClass().getName() + "]: " + message, throwable);
@@ -322,7 +322,7 @@ public abstract class SimpleMetrics implements Metrics {
     }
 
     public abstract static class Factory<T, F extends Metrics.Factory<T, F>> implements Metrics.Factory<T, F> {
-        private final Set<Chart<?>> charts = new HashSet<>(0);
+        private final Set<Metric<?>> metrics = new HashSet<>(0);
         private URI url = URI.create("https://metrics.faststats.dev/v1/collect");
         private @Nullable ErrorTracker tracker;
         private @Nullable Runnable flush;
@@ -331,8 +331,8 @@ public abstract class SimpleMetrics implements Metrics {
 
         @Override
         @SuppressWarnings("unchecked")
-        public F addChart(final Chart<?> chart) throws IllegalArgumentException {
-            if (!charts.add(chart)) throw new IllegalArgumentException("Chart already added: " + chart.getId());
+        public F addMetric(final Metric<?> metric) throws IllegalArgumentException {
+            if (!metrics.add(metric)) throw new IllegalArgumentException("Metric already added: " + metric.getId());
             return (F) this;
         }
 

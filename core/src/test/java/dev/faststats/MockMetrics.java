@@ -39,6 +39,6 @@ public class MockMetrics extends SimpleMetrics {
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
+    protected void appendDefaultData(final JsonObject metrics) {
     }
 }

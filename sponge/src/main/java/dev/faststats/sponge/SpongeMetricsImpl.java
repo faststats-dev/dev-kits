@@ -62,12 +62,12 @@ final class SpongeMetricsImpl extends SimpleMetrics implements SpongeMetrics {
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
-        charts.addProperty("online_mode", Sponge.server().isOnlineModeEnabled());
-        charts.addProperty("player_count", Sponge.server().onlinePlayers().size());
-        charts.addProperty("plugin_version", plugin.metadata().version().toString());
-        charts.addProperty("minecraft_version", Sponge.platform().minecraftVersion().name());
-        charts.addProperty("server_type", Sponge.platform().container(Platform.Component.IMPLEMENTATION).metadata().id());
+    protected void appendDefaultData(final JsonObject metrics) {
+        metrics.addProperty("online_mode", Sponge.server().isOnlineModeEnabled());
+        metrics.addProperty("player_count", Sponge.server().onlinePlayers().size());
+        metrics.addProperty("plugin_version", plugin.metadata().version().toString());
+        metrics.addProperty("minecraft_version", Sponge.platform().minecraftVersion().name());
+        metrics.addProperty("server_type", Sponge.platform().container(Platform.Component.IMPLEMENTATION).metadata().id());
     }
 
     @Override

@@ -26,7 +26,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
         super(factory, config);
 
         this.plugin = plugin;
-        var server = plugin.getServer();
+        final var server = plugin.getServer();
 
         this.pluginVersion = tryOrEmpty(() -> plugin.getPluginMeta().getVersion())
                 .orElseGet(() -> plugin.getDescription().getVersion());
@@ -43,7 +43,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     private boolean checkOnlineMode() {
-        var server = plugin.getServer();
+        final var server = plugin.getServer();
         return tryOrEmpty(() -> server.getServerConfig().isProxyOnlineMode())
                 .or(() -> tryOrEmpty(this::isProxyOnlineMode))
                 .orElseGet(server::getOnlineMode);
@@ -51,7 +51,7 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
 
     @SuppressWarnings("removal")
     private boolean isProxyOnlineMode() {
-        var server = plugin.getServer();
+        final var server = plugin.getServer();
         final var proxies = server.spigot().getPaperConfig().getConfigurationSection("proxies");
         if (proxies == null) return false;
 
@@ -64,12 +64,12 @@ final class BukkitMetricsImpl extends SimpleMetrics implements BukkitMetrics {
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
-        charts.addProperty("minecraft_version", minecraftVersion);
-        charts.addProperty("online_mode", checkOnlineMode());
-        charts.addProperty("player_count", getPlayerCount());
-        charts.addProperty("plugin_version", pluginVersion);
-        charts.addProperty("server_type", serverType);
+    protected void appendDefaultData(final JsonObject metrics) {
+        metrics.addProperty("minecraft_version", minecraftVersion);
+        metrics.addProperty("online_mode", checkOnlineMode());
+        metrics.addProperty("player_count", getPlayerCount());
+        metrics.addProperty("plugin_version", pluginVersion);
+        metrics.addProperty("server_type", serverType);
     }
 
     private int getPlayerCount() {

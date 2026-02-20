@@ -173,7 +173,7 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
      * @since 0.14.0
      */
     @Contract(pure = true)
-    static boolean isSameLoader(ClassLoader loader, Throwable error) {
+    static boolean isSameLoader(final ClassLoader loader, final Throwable error) {
         return ErrorHelper.isSameLoader(loader, error);
     }
 }    

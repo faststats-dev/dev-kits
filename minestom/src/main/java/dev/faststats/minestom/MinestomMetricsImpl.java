@@ -26,11 +26,11 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
     }
 
     @Override
-    protected void appendDefaultData(final JsonObject charts) {
-        charts.addProperty("minecraft_version", MinecraftServer.VERSION_NAME);
-        charts.addProperty("online_mode", !(MinecraftServer.process().auth() instanceof Auth.Offline));
-        charts.addProperty("player_count", MinecraftServer.getConnectionManager().getOnlinePlayerCount());
-        charts.addProperty("server_type", "Minestom");
+    protected void appendDefaultData(final JsonObject metrics) {
+        metrics.addProperty("minecraft_version", MinecraftServer.VERSION_NAME);
+        metrics.addProperty("online_mode", !(MinecraftServer.process().auth() instanceof Auth.Offline));
+        metrics.addProperty("player_count", MinecraftServer.getConnectionManager().getOnlinePlayerCount());
+        metrics.addProperty("server_type", "Minestom");
     }
 
     @Override
@@ -53,8 +53,8 @@ final class MinestomMetricsImpl extends SimpleMetrics implements MinestomMetrics
         getErrorTracker().ifPresent(this::registerExceptionHandler);
     }
 
-    private void registerExceptionHandler(ErrorTracker errorTracker) {
-        var handler = MinecraftServer.getExceptionManager().getExceptionHandler();
+    private void registerExceptionHandler(final ErrorTracker errorTracker) {
+        final var handler = MinecraftServer.getExceptionManager().getExceptionHandler();
         MinecraftServer.getExceptionManager().setExceptionHandler(error -> {
             handler.handleException(error);
             if (!ErrorTracker.isSameLoader(getClass().getClassLoader(), error)) return;
