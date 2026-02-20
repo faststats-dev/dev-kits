@@ -6,6 +6,7 @@ import dev.faststats.core.chart.Chart;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExamplePlugin extends JavaPlugin {
     // context-aware error tracker, automatically tracks errors in the same class loader
@@ -14,12 +15,15 @@ public class ExamplePlugin extends JavaPlugin {
     // context-unaware error tracker, does not automatically track errors
     public static final ErrorTracker CONTEXT_UNAWARE_ERROR_TRACKER = ErrorTracker.contextUnaware();
 
+    private final AtomicInteger gameCount = new AtomicInteger();
+
     private final BukkitMetrics metrics = BukkitMetrics.factory()
             .url(URI.create("https://metrics.example.com/v1/collect")) // For self-hosted metrics servers only
 
             // Custom example charts
             // For this to work you have to create a corresponding data source in your project settings first
             .addChart(Chart.number("example_chart", () -> 42))
+            .addChart(Chart.number("game_count", gameCount::get))
             .addChart(Chart.string("example_string", () -> "Hello, World!"))
             .addChart(Chart.bool("example_boolean", () -> true))
             .addChart(Chart.stringArray("example_string_array", () -> new String[]{"Option 1", "Option 2"}))
@@ -29,6 +33,8 @@ public class ExamplePlugin extends JavaPlugin {
             // Attach an error tracker
             // This must be enabled in the project settings
             .errorTracker(ERROR_TRACKER)
+
+            .onFlush(() -> gameCount.set(0)) // Reset game count on flush
 
             .debug(true) // Enable debug mode for development and testing
 
@@ -52,5 +58,9 @@ public class ExamplePlugin extends JavaPlugin {
         } catch (final Exception e) {
             CONTEXT_UNAWARE_ERROR_TRACKER.trackError(e);
         }
+    }
+    
+    public void startGame() {
+        gameCount.incrementAndGet();
     }
 }
