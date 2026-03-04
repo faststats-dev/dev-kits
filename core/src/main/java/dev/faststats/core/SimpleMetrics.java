@@ -60,7 +60,6 @@ public abstract class SimpleMetrics implements Metrics {
         }
         this.SDK_NAME = properties.getProperty("name", "unknown");
         this.SDK_VERSION = properties.getProperty("version", "unknown");
-        System.out.println(SDK_NAME + "/" + SDK_VERSION);
     }
 
     @Contract(mutates = "io")
