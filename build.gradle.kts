@@ -116,7 +116,7 @@ subprojects {
             repositories {
                 maven {
                     val channel = if ((version as String).contains("-pre")) "snapshots" else "releases"
-                    url = uri("https://repo.thenextlvl.net/$channel")
+                    url = uri("https://repo.faststats.dev/$channel")
                     credentials {
                         username = System.getenv("REPOSITORY_USER")
                         password = System.getenv("REPOSITORY_TOKEN")
