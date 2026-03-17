@@ -416,7 +416,8 @@ public abstract class SimpleMetrics implements Metrics {
                 # The server ID below is randomly generated and can be regenerated at any time.
                 #
                 # Enabling metrics has no noticeable performance impact.
-                # Keeping metrics enabled is recommended, but you can disable them by setting 'enabled=false'.
+                # Keeping metrics enabled is recommended, but you can opt out by setting
+                # 'enabled=false' in plugins/faststats/config.properties.
                 #
                 # If you suspect a plugin is collecting personal data or bypassing the "enabled" option,
                 # please report it at: https://faststats.dev/abuse
