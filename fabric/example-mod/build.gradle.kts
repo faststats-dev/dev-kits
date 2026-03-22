@@ -1,16 +1,28 @@
 plugins {
-    id("fabric-loom")
+    alias(libs.plugins.gradle.minecraft.fabric.loom)
 }
 
 dependencies {
-    implementation(project(":fabric"))
+    implementation(projects.fabric)
+
     mappings(loom.officialMojangMappings())
-    minecraft("com.mojang:minecraft:1.21.11")
-    modCompileOnly("net.fabricmc:fabric-loader:0.18.4")
+
+    minecraft(libs.minecraft.mojang)
+
+    modImplementation(libs.minecraft.fabric.loader)
 }
 
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(project(":fabric").sourceSets["main"].output)
-    from(project(":core").sourceSets["main"].output)
+
+    from(
+        project(projects.fabric.path)
+            .sourceSets
+            .main
+            .map(SourceSet::getOutput),
+        project(projects.core.path)
+            .sourceSets
+            .main
+            .map(SourceSet::getOutput)
+    )
 }

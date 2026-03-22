@@ -5,6 +5,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":core"))
-    compileOnly("net.md-5:bungeecord-api:26.1-R0.1-SNAPSHOT")
+    api(projects.core)
+
+    compileOnly(libs.minecraft.bungeecord)
 }

@@ -1,0 +1,39 @@
+[versions]
+google-gson = "2.13.2"
+gradle-shadow = "9.4.0"
+hytale-server = "2026.03.20-db226053c"
+minecraft-bungeecord = "26.1-R0.1-SNAPSHOT"
+minecraft-fabric-api = "0.139.4+1.21.11"
+minecraft-fabric-loader = "0.18.4"
+minecraft-fabric-loom = "1.15-SNAPSHOT"
+minecraft-minestom = "2026.03.03-1.21.11"
+minecraft-nukkit = "1.0-SNAPSHOT"
+minecraft-paper = "1.21.11-R0.1-SNAPSHOT"
+minecraft-sponge = "8.3.0-SNAPSHOT"
+minecraft-velocity = "3.5.0-SNAPSHOT"
+minecraft-version = "1.21.11"
+test-junit-bom = "6.1.0-M1"
+tool-jb-annotations = "26.1.0"
+tool-jspecify = "1.0.0"
+
+[libraries]
+google-gson = { module = "com.google.code.gson:gson", version.ref = "google-gson" }
+hytale-server = { module = "com.hypixel.hytale:Server", version.ref = "hytale-server" }
+minecraft-bungeecord = { module = "net.md-5:bungeecord-api", version.ref = "minecraft-bungeecord" }
+minecraft-fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "minecraft-fabric-api" }
+minecraft-fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "minecraft-fabric-loader" }
+minecraft-minestom = { module = "net.minestom:minestom", version.ref = "minecraft-minestom" }
+minecraft-mojang = { module = "com.mojang:minecraft", version.ref = "minecraft-version" }
+minecraft-nukkit = { module = "cn.nukkit:nukkit", version.ref = "minecraft-nukkit" }
+minecraft-paper = { module = "io.papermc.paper:paper-api", version.ref = "minecraft-paper" }
+minecraft-sponge = { module = "org.spongepowered:spongeapi", version.ref = "minecraft-sponge" }
+minecraft-velocity = { module = "com.velocitypowered:velocity-api", version.ref = "minecraft-velocity" }
+test-junit-bom = { module = "org.junit:junit-bom", version.ref = "test-junit-bom" }
+test-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+test-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+tool-jb-annotations = { module = "org.jetbrains:annotations", version.ref = "tool-jb-annotations" }
+tool-jspecify = { module = "org.jspecify:jspecify", version.ref = "tool-jspecify" }
+
+[plugins]
+gradle-minecraft-fabric-loom = { id = "fabric-loom", version.ref = "minecraft-fabric-loom" }
+gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow" }

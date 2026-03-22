@@ -3,8 +3,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.spongepowered:spongeapi:8.3.0-SNAPSHOT")
-    implementation(project(":sponge"))
+    compileOnly(libs.minecraft.sponge)
+
+    implementation(projects.sponge)
 }
 
 tasks.shadowJar {

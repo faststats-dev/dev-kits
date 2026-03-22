@@ -3,6 +3,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":core"))
-    compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
+    api(projects.core)
+
+    compileOnly(libs.minecraft.velocity)
 }

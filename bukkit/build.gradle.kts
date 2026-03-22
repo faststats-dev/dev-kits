@@ -13,6 +13,7 @@ configurations.compileClasspath {
 }
 
 dependencies {
-    api(project(":core"))
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    api(projects.core)
+
+    compileOnly(libs.minecraft.paper)
 }

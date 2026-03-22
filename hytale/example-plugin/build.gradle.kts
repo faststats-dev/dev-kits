@@ -3,8 +3,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.hypixel.hytale:Server:2026.03.20-db226053c")
-    implementation(project(":hytale"))
+    compileOnly(libs.hytale.server)
+    implementation(projects.hytale)
 }
 
 tasks.shadowJar {

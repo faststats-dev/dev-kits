@@ -3,8 +3,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("net.md-5:bungeecord-api:26.1-R0.1-SNAPSHOT")
-    implementation(project(":bungeecord"))
+    compileOnly(libs.minecraft.bungeecord)
+
+    implementation(projects.bungeecord)
 }
 
 tasks.shadowJar {

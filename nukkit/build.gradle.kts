@@ -6,6 +6,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":core"))
-    compileOnly("cn.nukkit:nukkit:1.0-SNAPSHOT")
+    api(projects.core)
+
+    compileOnly(libs.minecraft.nukkit)
 }

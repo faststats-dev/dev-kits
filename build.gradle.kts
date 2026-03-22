@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("com.gradleup.shadow") version "9.4.0" apply false
+    alias(libs.plugins.gradle.shadow) apply false
 }
 
 val javaVersionsOverride = mapOf(

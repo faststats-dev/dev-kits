@@ -3,9 +3,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
-    implementation(project(":velocity"))
+    compileOnly(libs.minecraft.velocity)
+
+    annotationProcessor(libs.minecraft.velocity)
+
+    implementation(projects.velocity)
 }
 
 tasks.shadowJar {

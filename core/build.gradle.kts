@@ -1,10 +1,11 @@
 dependencies {
-    compileOnlyApi("com.google.code.gson:gson:2.13.2")
-    compileOnlyApi("org.jetbrains:annotations:26.1.0")
-    compileOnlyApi("org.jspecify:jspecify:1.0.0")
+    compileOnlyApi(libs.google.gson)
+    compileOnlyApi(libs.tool.jb.annotations)
+    compileOnlyApi(libs.tool.jspecify)
 
-    testImplementation("com.google.code.gson:gson:2.13.2")
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation(platform("org.junit:junit-bom:6.1.0-M1"))
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(platform(libs.test.junit.bom))
+    testImplementation(libs.google.gson)
+    testImplementation(libs.test.junit.jupiter)
+
+    testRuntimeOnly(libs.test.junit.platform.launcher)
 }
