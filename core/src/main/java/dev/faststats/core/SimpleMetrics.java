@@ -51,6 +51,7 @@ public abstract class SimpleMetrics implements Metrics {
 
     private final String SDK_NAME;
     private final String SDK_VERSION;
+    private final String BUILD_ID;
 
     {
         final var properties = new Properties();
@@ -60,6 +61,7 @@ public abstract class SimpleMetrics implements Metrics {
         }
         this.SDK_NAME = properties.getProperty("name", "unknown");
         this.SDK_VERSION = properties.getProperty("version", "unknown");
+        this.BUILD_ID = properties.getProperty("build-id", "unknown");
     }
 
     @Contract(mutates = "io")
@@ -278,7 +280,7 @@ public abstract class SimpleMetrics implements Metrics {
         data.add("data", metrics);
 
         getErrorTracker().map(SimpleErrorTracker.class::cast)
-                .map(SimpleErrorTracker::getData)
+                .map(tracker -> tracker.getData(BUILD_ID))
                 .filter(errors -> !errors.isEmpty())
                 .ifPresent(errors -> data.add("errors", errors));
         return data;
