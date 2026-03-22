@@ -35,12 +35,13 @@ final class SimpleErrorTracker implements ErrorTracker {
         }
     }
 
-    public JsonArray getData() {
+    public JsonArray getData(final String buildId) {
         final var report = new JsonArray(reports.size());
 
         reports.forEach((hash, object) -> {
             final var copy = object.deepCopy();
             copy.addProperty("hash", hash);
+            copy.addProperty("buildId", buildId);
             final var count = collected.getOrDefault(hash, 1);
             if (count > 1) copy.addProperty("count", count);
             report.add(copy);
