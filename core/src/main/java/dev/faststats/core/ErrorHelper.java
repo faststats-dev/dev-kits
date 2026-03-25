@@ -17,7 +17,7 @@ final class ErrorHelper {
     private static final int STACK_TRACE_LENGTH = Math.min(500, Integer.getInteger("faststats.stack-trace-length", 300));
     private static final int STACK_TRACE_LIMIT = Math.min(50, Integer.getInteger("faststats.stack-trace-limit", 15));
 
-    public static JsonObject compile(final Throwable error, @Nullable final List<String> suppress) {
+    public static JsonObject compile(final Throwable error, @Nullable final List<String> suppress, final boolean handled) {
         final var report = new JsonObject();
         final var message = getAnonymizedMessage(error);
 
@@ -40,6 +40,7 @@ final class ErrorHelper {
         if (message != null) report.addProperty("message", message);
 
         report.add("stack", stacktrace);
+        report.addProperty("handled", true);
 
         return report;
     }

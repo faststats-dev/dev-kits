@@ -19,13 +19,23 @@ final class SimpleErrorTracker implements ErrorTracker {
 
     @Override
     public void trackError(final String message) {
-        trackError(new RuntimeException(message));
+        trackError(message, true);
     }
 
     @Override
     public void trackError(final Throwable error) {
+        trackError(error, true);
+    }
+
+    @Override
+    public void trackError(final String message, final boolean handled) {
+        trackError(new RuntimeException(message), handled);
+    }
+
+    @Override
+    public void trackError(final Throwable error, final boolean handled) {
         try {
-            final var compiled = ErrorHelper.compile(error, null);
+            final var compiled = ErrorHelper.compile(error, null, handled);
             final var hashed = MurmurHash3.hash(compiled);
             if (collected.compute(hashed, (k, v) -> {
                 return v == null ? 1 : v + 1;
@@ -84,9 +94,9 @@ final class SimpleErrorTracker implements ErrorTracker {
                 if (loader != null && !ErrorTracker.isSameLoader(loader, error)) return;
                 final var event = errorEvent;
                 if (event != null) event.accept(loader, error);
-                trackError(error);
+                trackError(error, false);
             } catch (final Throwable t) {
-                trackError(t);
+                trackError(t, false);
             }
         });
     }
