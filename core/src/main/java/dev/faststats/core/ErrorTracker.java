@@ -21,8 +21,8 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
      *
      * @return the error tracker
      * @see #contextUnaware()
-     * @see #trackError(String)
-     * @see #trackError(Throwable)
+     * @see #trackError(String, boolean)
+     * @see #trackError(Throwable, boolean)
      * @since 0.10.0
      */
     @Contract(value = " -> new")
@@ -51,23 +51,50 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
     }
 
     /**
-     * Tracks an error.
+     * Tracks a handled  error.
      *
      * @param message the error message
      * @see #trackError(Throwable)
+     * @see #trackError(String, boolean)
      * @since 0.10.0
      */
     @Contract(mutates = "this")
     void trackError(String message);
 
     /**
-     * Tracks an error.
+     * Tracks a handled error.
      *
      * @param error the error
+     * @see #trackError(Throwable, boolean)
      * @since 0.10.0
      */
     @Contract(mutates = "this")
     void trackError(Throwable error);
+
+    /**
+     * Tracks an error.
+     * <p>
+     * A {@code handled=true} error is expected and properly handled.
+     *
+     * @param message the error message
+     * @param handled whether the error was handled
+     * @see #trackError(Throwable, boolean)
+     * @since 0.20.0
+     */
+    @Contract(mutates = "this")
+    void trackError(String message, boolean handled);
+
+    /**
+     * Tracks an error.
+     * <p>
+     * A {@code handled=true} error is expected and properly handled.
+     *
+     * @param error   the error
+     * @param handled whether the error was handled
+     * @since 0.20.0
+     */
+    @Contract(mutates = "this")
+    void trackError(Throwable error, boolean handled);
 
     /**
      * Attaches an error context to the tracker.
