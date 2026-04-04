@@ -7,7 +7,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0")
 }
 
-rootProject.name = "dev-kits"
+rootProject.name = "faststats-java"
 include("bukkit")
 include("bukkit:example-plugin")
 include("bungeecord")

@@ -103,7 +103,7 @@ subprojects {
                 pom {
                     url.set("https://faststats.dev/docs")
                     scm {
-                        val repository = "faststats-dev/dev-kits"
+                        val repository = "faststats-dev/faststats-java"
                         url.set("https://github.com/$repository")
                         connection.set("scm:git:git://github.com/$repository.git")
                         developerConnection.set("scm:git:ssh://github.com/$repository.git")
