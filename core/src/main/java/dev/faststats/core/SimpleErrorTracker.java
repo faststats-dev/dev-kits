@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -43,14 +45,7 @@ final class SimpleErrorTracker implements ErrorTracker {
     @Override
     public void trackError(final Throwable error, final boolean handled) {
         try {
-            if (ignoredTypes.contains(error.getClass())) return;
-
-            final var message = error.getMessage() != null ? error.getMessage() : "";
-            if (ignoredPatterns.stream().map(pattern -> pattern.matcher(message)).anyMatch(Matcher::find)) return;
-
-            final var typedPatterns = ignoredTypedPatterns.get(error.getClass());
-            if (typedPatterns != null && typedPatterns.stream().map(pattern -> pattern.matcher(message)).anyMatch(Matcher::find)) return;
-
+            if (isIgnored(error, Collections.newSetFromMap(new IdentityHashMap<>()))) return;
             final var compiled = ErrorHelper.compile(error, null, handled);
             final var hashed = MurmurHash3.hash(compiled);
             if (collected.compute(hashed, (k, v) -> {
@@ -59,6 +54,21 @@ final class SimpleErrorTracker implements ErrorTracker {
             reports.put(hashed, compiled);
         } catch (final NoClassDefFoundError ignored) {
         }
+    }
+
+    private boolean isIgnored(@Nullable final Throwable error, final Set<Throwable> visited) {
+        if (error == null || !visited.add(error)) return false;
+
+        if (ignoredTypes.contains(error.getClass())) return true;
+
+        final var message = error.getMessage() != null ? error.getMessage() : "";
+        if (ignoredPatterns.stream().map(pattern -> pattern.matcher(message)).anyMatch(Matcher::find)) return true;
+
+        final var patterns = ignoredTypedPatterns.get(error.getClass());
+        if (patterns != null && patterns.stream().map(pattern -> pattern.matcher(message)).anyMatch(Matcher::find))
+            return true;
+
+        return isIgnored(error.getCause(), visited);
     }
 
     @Override
