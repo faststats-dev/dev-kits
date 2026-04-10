@@ -20,7 +20,7 @@ final class ErrorHelper {
     private static final int STACK_TRACE_LIMIT = Math.min(50, Integer.getInteger("faststats.stack-trace-limit", 15));
 
     public static JsonObject compile(final Throwable error, @Nullable final List<String> suppress, final boolean handled,
-                                     final Map<Pattern, String> customPatterns) {
+                                     final List<Map.Entry<Pattern, String>> customPatterns) {
         final var report = new JsonObject();
         final var message = getAnonymizedMessage(error, customPatterns);
 
@@ -50,7 +50,7 @@ final class ErrorHelper {
 
     private static void appendCauseChain(@Nullable Throwable cause, final List<String> parentStack,
                                          @Nullable final List<String> suppress, final JsonArray stacktrace,
-                                         final Map<Pattern, String> customPatterns) {
+                                         final List<Map.Entry<Pattern, String>> customPatterns) {
         final var toSuppress = new ArrayList<>(parentStack);
         if (suppress != null) toSuppress.addAll(suppress);
         final var visited = Collections.<Throwable>newSetFromMap(new IdentityHashMap<>());
@@ -193,13 +193,13 @@ final class ErrorHelper {
         return loader == current;
     }
 
-    private static @Nullable String getAnonymizedMessage(final Throwable error, final Map<Pattern, String> customPatterns) {
+    private static @Nullable String getAnonymizedMessage(final Throwable error, final List<Map.Entry<Pattern, String>> customPatterns) {
         final var message = error.getMessage();
         if (message == null) return null;
         var truncated = message.length() > MESSAGE_LENGTH
                 ? message.substring(0, MESSAGE_LENGTH) + "..."
                 : message;
-        for (final var entry : customPatterns.entrySet()) {
+        for (final var entry : customPatterns) {
             truncated = entry.getKey().matcher(truncated).replaceAll(entry.getValue());
         }
         return truncated;
@@ -228,7 +228,7 @@ final class ErrorHelper {
     }
 
     public static Pattern jdbcUrlPattern() {
-        return Pattern.compile("(jdbc:[^:]+://[^:]+:)[^@]+(@)");
+        return Pattern.compile("(jdbc:[^:]+://[^:]+:(?:\\d+:)?)[^@]+(@)");
     }
 
     public static Pattern userHomePathPattern() {
@@ -238,7 +238,8 @@ final class ErrorHelper {
     }
 
     public static Optional<Pattern> usernamePattern() {
-        return Optional.ofNullable(System.getProperty("user.home"))
+        return Optional.ofNullable(System.getProperty("user.name"))
+                .filter(s -> s.trim().length() > 2)
                 .map(Pattern::quote)
                 .map(Pattern::compile);
     }

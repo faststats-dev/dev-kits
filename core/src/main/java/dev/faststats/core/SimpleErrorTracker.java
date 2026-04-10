@@ -7,10 +7,12 @@ import org.jspecify.annotations.Nullable;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -23,19 +25,19 @@ final class SimpleErrorTracker implements ErrorTracker {
     private final Map<Class<? extends Throwable>, Set<Pattern>> ignoredTypedPatterns = new ConcurrentHashMap<>();
     private final Set<Class<? extends Throwable>> ignoredTypes = new CopyOnWriteArraySet<>();
     private final Set<Pattern> ignoredPatterns = new CopyOnWriteArraySet<>();
-    private final Map<Pattern, String> anonymizationEntries = new ConcurrentHashMap<>(Map.of(
-            ErrorHelper.discordWebhookPattern(), "$1[token hidden]",
-            ErrorHelper.ipv4Pattern(), "[IP hidden]",
-            ErrorHelper.ipv6Pattern(), "[IP hidden]",
-            ErrorHelper.jdbcUrlPattern(), "$1[password hidden]$2",
-            ErrorHelper.userHomePathPattern(), "$1$2$3[username hidden]"
+    private final List<Map.Entry<Pattern, String>> anonymizationEntries = new CopyOnWriteArrayList<>(List.of(
+            Map.entry(ErrorHelper.ipv4Pattern(), "[IP hidden]"),
+            Map.entry(ErrorHelper.ipv6Pattern(), "[IP hidden]"),
+            Map.entry(ErrorHelper.userHomePathPattern(), "$1$2$3[username hidden]"),
+            Map.entry(ErrorHelper.discordWebhookPattern(), "$1[token hidden]"),
+            Map.entry(ErrorHelper.jdbcUrlPattern(), "$1[password hidden]$2")
     ));
 
     private volatile @Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent = null;
     private volatile @Nullable UncaughtExceptionHandler originalHandler = null;
 
     public SimpleErrorTracker() {
-        ErrorHelper.usernamePattern().ifPresent(pattern -> anonymizationEntries.put(pattern, "[username hidden]"));
+        ErrorHelper.usernamePattern().ifPresent(pattern -> anonymizationEntries.add(Map.entry(pattern, "[username hidden]")));
     }
 
     @Override
@@ -102,7 +104,7 @@ final class SimpleErrorTracker implements ErrorTracker {
 
     @Override
     public ErrorTracker anonymize(final Pattern pattern, final String replacement) {
-        anonymizationEntries.put(pattern, replacement);
+        anonymizationEntries.add(Map.entry(pattern, replacement));
         return this;
     }
 
