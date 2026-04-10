@@ -23,9 +23,20 @@ final class SimpleErrorTracker implements ErrorTracker {
     private final Map<Class<? extends Throwable>, Set<Pattern>> ignoredTypedPatterns = new ConcurrentHashMap<>();
     private final Set<Class<? extends Throwable>> ignoredTypes = new CopyOnWriteArraySet<>();
     private final Set<Pattern> ignoredPatterns = new CopyOnWriteArraySet<>();
+    private final Map<Pattern, String> anonymizationEntries = new ConcurrentHashMap<>(Map.of(
+            ErrorHelper.discordWebhookPattern(), "$1[token hidden]",
+            ErrorHelper.ipv4Pattern(), "[IP hidden]",
+            ErrorHelper.ipv6Pattern(), "[IP hidden]",
+            ErrorHelper.jdbcUrlPattern(), "$1[password hidden]$2",
+            ErrorHelper.userHomePathPattern(), "$1$2$3[username hidden]"
+    ));
 
     private volatile @Nullable BiConsumer<@Nullable ClassLoader, Throwable> errorEvent = null;
     private volatile @Nullable UncaughtExceptionHandler originalHandler = null;
+
+    public SimpleErrorTracker() {
+        ErrorHelper.usernamePattern().ifPresent(pattern -> anonymizationEntries.put(pattern, "[username hidden]"));
+    }
 
     @Override
     public void trackError(final String message) {
@@ -46,7 +57,7 @@ final class SimpleErrorTracker implements ErrorTracker {
     public void trackError(final Throwable error, final boolean handled) {
         try {
             if (isIgnored(error, Collections.newSetFromMap(new IdentityHashMap<>()))) return;
-            final var compiled = ErrorHelper.compile(error, null, handled);
+            final var compiled = ErrorHelper.compile(error, null, handled, anonymizationEntries);
             final var hashed = MurmurHash3.hash(compiled);
             if (collected.compute(hashed, (k, v) -> {
                 return v == null ? 1 : v + 1;
@@ -86,6 +97,12 @@ final class SimpleErrorTracker implements ErrorTracker {
     @Override
     public ErrorTracker ignoreError(final Class<? extends Throwable> type, final Pattern pattern) {
         ignoredTypedPatterns.computeIfAbsent(type, k -> new CopyOnWriteArraySet<>()).add(pattern);
+        return this;
+    }
+
+    @Override
+    public ErrorTracker anonymize(final Pattern pattern, final String replacement) {
+        anonymizationEntries.put(pattern, replacement);
         return this;
     }
 

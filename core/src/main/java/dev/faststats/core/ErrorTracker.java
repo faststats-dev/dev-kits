@@ -178,6 +178,36 @@ public sealed interface ErrorTracker permits SimpleErrorTracker {
     }
 
     /**
+     * Adds an anonymization pattern that replaces matched text in error messages.
+     * <pre>{@code
+     * tracker.anonymize(Pattern.compile("token=[^&]+"), "token=[redacted]");
+     * }</pre>
+     *
+     * @param pattern     the regex pattern to match
+     * @param replacement the replacement string
+     * @return the error tracker
+     * @see java.util.regex.Matcher#replaceAll(String)
+     * @since 0.22.0
+     */
+    @Contract(value = "_, _ -> this", mutates = "this")
+    ErrorTracker anonymize(Pattern pattern, String replacement);
+
+    /**
+     * Adds an anonymization pattern that replaces matched text in error messages.
+     *
+     * @param pattern     the regex pattern string to match
+     * @param replacement the replacement string
+     * @return the error tracker
+     * @see #anonymize(Pattern, String)
+     * @see java.util.regex.Matcher#replaceAll(String)
+     * @since 0.22.0
+     */
+    @Contract(value = "_, _ -> this", mutates = "this")
+    default ErrorTracker anonymize(@RegExp final String pattern, final String replacement) {
+        return anonymize(Pattern.compile(pattern), replacement);
+    }
+
+    /**
      * Attaches an error context to the tracker.
      * <p>
      * If the class loader is {@code null}, the tracker will track all errors.
